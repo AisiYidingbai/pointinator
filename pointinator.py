@@ -969,6 +969,6 @@ if(not os.path.exists(drill_file)):                                             
 # logging
 handler = logging.FileHandler(filename='/home/aisi/pointinator/discord.log', encoding='utf-8', mode='w')
 
-client.run('put your key here', reconnect=True, log_handler=handler)
+client.run(open("secret.token", mode="r", encoding="utf-8").read(), reconnect=True, log_handler=handler)
 
 

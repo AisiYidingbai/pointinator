@@ -14,15 +14,7 @@ from math import e
 import numpy as np
 import pandas as pd
 from datetime import datetime
-file = "/home/aisi/pointinator/pointinator.txt"
-bak1 = "/home/aisi/pointinator/pointinator.bak1.txt"
-bak2 = "/home/aisi/pointinator/pointinator.bak2.txt"
-bak3 = "/home/aisi/pointinator/pointinator.bak3.txt"
-drill_file = "/home/aisi/pointinator/drill.txt"
-drill_bak1 = "/home/aisi/pointinator/drill.bak1.txt"
-drill_bak2 = "/home/aisi/pointinator/drill.bak2.txt"
-drill_bak3 = "/home/aisi/pointinator/drill.bak3.txt"
-paramsfile = "/home/aisi/pointinator/params.txt"
+import argparse
 
 #%% I/O Functions
 
@@ -875,9 +867,13 @@ async def on_ready():
 async def on_message(message):                                                  # with embeds
     if(message.author.bot):
         return                                                                  # don't respond to self
+    if(message.content == ""):
+        return
     if(str(message.channel) == "points"):                                       # don't chat in the wrong channels
         command = message.content                                               # get the discord message and interpret it
         print(command)
+        isOfficer = "Officers" in str(message.author.roles)
+        print(isOfficer)
         ret = on_command(command)
         commandecho = "*Your command: *`" + re.sub("[*`]", "", command) + "`" + "\n"
         if(isinstance(re.match("^dr", command), re.Match)):
@@ -931,6 +927,23 @@ async def on_message(message):                                                  
 
 #%% Execution
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-k", "--keyfile", help = "Path to Discord bot secret key.")
+parser.add_argument("-o", "--workdir", help = "Path to working directory.")
+args = parser.parse_args()
+keyfile = args.keyfile
+
+file = args.workdir + "/pointinator.txt"
+bak1 = args.workdir + "/pointinator.bak1.txt"
+bak2 = args.workdir + "/pointinator.bak2.txt"
+bak3 = args.workdir + "/pointinator.bak3.txt"
+drill_file = args.workdir + "/drill.txt"
+drill_bak1 = args.workdir + "/drill.bak1.txt"
+drill_bak2 = args.workdir + "/drill.bak2.txt"
+drill_bak3 = args.workdir + "/drill.bak3.txt"
+paramsfile = args.workdir + "/params.txt"
+handlerfile = args.workdir + "/discord.log"
+
 if(os.path.exists(paramsfile)):
     with open(paramsfile) as r:                                                 # parameters are stored as json. load it on run
         params = json.load(r)
@@ -967,8 +980,10 @@ if(not os.path.exists(drill_file)):                                             
     drill_reset()
 
 # logging
-handler = logging.FileHandler(filename='/home/aisi/pointinator/discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename=handlerfile, encoding='utf-8', mode='w')
 
-client.run(open("secret.token", mode="r", encoding="utf-8").read(), reconnect=True, log_handler=handler)
+# run bot
+key = open(keyfile, mode='r', encoding='utf-8').read()
+client.run(key, reconnect=True, log_handler=handler)
 
 

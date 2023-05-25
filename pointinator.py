@@ -55,7 +55,11 @@ def undosheet():
         res2 = gettierlist(data)
         return [res1, res2]
 
-
+# load the queue
+def loadqueue():
+    queue = pd.read_csv(queuefile)
+    queue = queue[['Requestor', 'Request', 'Time']]
+    return queue
 
 #%% Sheet Functions
 
@@ -435,6 +439,43 @@ def msg_info():
         """
     return res
 
+def msg_queue_add(requestor, request):
+    queue = loadqueue()
+    date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    queue = pd.concat([queue, pd.DataFrame({'Requestor':[requestor], 'Request':[request], 'Time':[date]})])
+    queue.to_csv(queuefile)
+    res1 = "Added your request `" + request + "` to the queue for approval."
+    res2 = queue
+    return [res1, res2]
+
+def msg_queue_show():
+    queue = loadqueue()
+    res1 = "There are " + str(len(queue)) + " items in the queue:"
+    res2 = queue
+    return [res1, res2]
+
+def msg_queue_approve():
+    queue = loadqueue()
+    command = queue.iloc[0,1]
+    on_command(command)
+    res1 = "Approved request `" + queue.iloc[0,1] + "` by " + queue.iloc[0,0] + " made at " + queue.iloc[0,2] + "."
+    queue = queue.iloc[1:]
+    queue.to_csv(queuefile)
+    data = loadsheet()
+    tierlist = gettierlist(data)
+    res2 = tierlist
+    return [res1, res2]
+    
+def msg_queue_deny():
+    queue = loadqueue()
+    res1 = "Denied request `" + queue.iloc[0,1] + "` by " + queue.iloc[0,0] + " made at " + queue.iloc[0,2] + "."
+    queue = queue.iloc[1:]
+    queue.to_csv(queuefile)
+    res2 = queue
+    if(len(queue) == 0):
+        return res1
+    else:
+        return [res1, res2]
 
 
 #%% Main Routine
@@ -533,6 +574,15 @@ def on_command(command):                                                        
             ret = msg_reset(parsed[1])
     elif(keyword == "points"):
         ret = msg_points()
+    elif(keyword == "q" or keyword == "queue"):
+        if(len(parsed) < 2):
+            ret = msg_queue_show()
+        elif(parsed[1] == "a" or parsed[1] == "approve"):
+            ret = msg_queue_approve()
+        elif(parsed[1] == "d" or parsed[1] == "deny"):
+            ret = msg_queue_deny()
+        else:
+            ret = msg_queue_show()
     elif(keyword == "h" or keyword == "help"):
         ret = msg_man()
     elif(keyword == "i" or keyword == "info"):
@@ -873,26 +923,36 @@ async def on_message(message):                                                  
         command = message.content                                               # get the discord message and interpret it
         print(command)
         isOfficer = "Officers" in str(message.author.roles)
-        print(isOfficer)
-        ret = on_command(command)
-        commandecho = "*Your command: *`" + re.sub("[*`]", "", command) + "`" + "\n"
-        if(isinstance(re.match("^dr", command), re.Match)):
-            colour = discord.Colour.dark_gold()
+        if(isOfficer):
+            ret = on_command(command)
+            commandecho = "*Your command: *`" + re.sub("[*`]", "", command) + "`" + "\n"
+            if(isinstance(re.match("^dr", command), re.Match)):
+                colour = discord.Colour.dark_gold()
+            else:
+                colour = discord.Colour.teal()
+            if(isinstance(ret, str)):
+                ret = commandecho + ret
+                await message.channel.send(ret)
+            elif(isinstance(ret, list)):
+                embed = discord.Embed(title = commandecho,
+                                      #description = "```" + str(ret[1]) + "```",
+                                      color = colour)            
+                embed.add_field(name = "", value = ret[0], inline=False)
+                embed.add_field(name = "", value = "```" + str(ret[1]) + "```", inline=False)
+                embed.set_footer(text = "by Yidingbai :)")
+                await message.channel.send(embed = embed)
+            else:
+                return None
         else:
+            commandecho = "*Your command: *`" + re.sub("[*`]", "", command) + "`" + "\n"
             colour = discord.Colour.teal()
-        if(isinstance(ret, str)):
-            ret = commandecho + ret
-            await message.channel.send(ret)
-        elif(isinstance(ret, list)):
+            ret = msg_queue_add(message.author, message.content)
             embed = discord.Embed(title = commandecho,
-                                  #description = "```" + str(ret[1]) + "```",
                                   color = colour)            
             embed.add_field(name = "", value = ret[0], inline=False)
             embed.add_field(name = "", value = "```" + str(ret[1]) + "```", inline=False)
             embed.set_footer(text = "by Yidingbai :)")
             await message.channel.send(embed = embed)
-        else:
-            return None
 
 #%% Role selector        
     elif(str(message.channel) == "roles"):
@@ -942,6 +1002,7 @@ drill_bak1 = args.workdir + "/drill.bak1.txt"
 drill_bak2 = args.workdir + "/drill.bak2.txt"
 drill_bak3 = args.workdir + "/drill.bak3.txt"
 paramsfile = args.workdir + "/params.txt"
+queuefile = args.workdir + "/queue.txt"
 handlerfile = args.workdir + "/discord.log"
 
 if(os.path.exists(paramsfile)):
@@ -971,6 +1032,18 @@ else:
         }
     with open(paramsfile, 'w') as f:
         json.dump(params, f, indent = 4)
+
+if(os.path.exists(queuefile)):
+    with open(queuefile) as r:
+        queue = loadqueue()
+else:
+    queue = {
+        'Requestor':[],
+        'Request':[],
+        'Time':[]
+        }
+    queue = pd.DataFrame(queue)
+    queue.to_csv(queuefile)
 
 
 if(not os.path.exists(file)):                                                   # make a new sheet if it doesn't exist

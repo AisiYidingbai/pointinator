@@ -452,6 +452,10 @@ def msg_queue_show():
     queue = loadqueue()
     res1 = "There are " + str(len(queue)) + " items in the queue:"
     res2 = queue
+    if(len(queue) == 0):
+        return res1
+    else:
+        return [res1, res2]
     return [res1, res2]
 
 def msg_queue_approve():

@@ -369,44 +369,52 @@ def msg_params():
     return [res1, res2]
 
 def msg_help():
-    res = """Possible Pointinator commands:
-    `add`, `split`, `offset`, `show`, `undo`, `new`, `tiers`, `whois`, `set`, `params`, `reset`, `audit`, `points`, `help`, `info`.\n
-    Possible Pointinator guild drill commands:
-    `drill add`, `drill show`, `drill summary`, `drill progress`, `drill undo`, `drill audit`, `drill reset`.\n
+    res = """
+    Possible Pointinator commands:
+    `add`, `split`, `offset`, `new`, `show`, `delete`, `undo`, `queue`, `reset`, `audit`, `tiers`, `whois`, `set`, `params`, `edit`, `points`, `help`, `info`, `chat`, `drill`.\n
     Issue `help` for detailed usage instructions.
     """
     return res
 
 def msg_man():
-    res = """Usage:
-    \t`add <p1 p2 ...> <n>`: Award *n* points to one or more participants *p*
-    \t`split <p1 p2 ...> <n>`: Divide *n* points between participants *p*
-    \t`offset <p> <n>`: Add *n* tiers to a participant *p*
+    res = """
+    Usage:
+    \t`a <p ...> <n>`: Award *n* points to one or more participants *p*
+    \t`s <p ...> <n>`: Divide *n* points between participants *p*
+    \t`o <p> <n>`: Add *n* tiers to a participant *p*
+    \t`n <p>`: Add a new participant *p*
     \t`show`: Show the current sheet
-    \t`undo`: Undo the last change
-    \t`new <p>`: Add a new participant *p*
+    \t`del <p>`: Delete a participant *p*
+    \t`z`: Undo the last change
+    \t`q`: Show the queue
+    \t`q a`: Approve the request at the top of the queue
+    \t`q d`: Decline the request at the top of the queue
+    \t`q q <requestor> <request>`: Manually add an entry to the queue with *requestor* and *request*
+    \t`r`: Wipe the sheet
+    \t`audit <n>`: Show the last *n* sheet actions
     \t`tiers`: Show the current point requirements per tier
     \t`whois <name>`: See if I can recognise a participant *name*
     \t`set <param> <value>`: Change a Pointinator *param*eter to *value*
     \t`params`: Show all Pointinator parameters
-    \t`reset`: Wipe the sheet
-    \t`audit <n>`: Show the last *n* sheet actions
+    \t`edit <field> <line> <value>`: Change a sheet entry in *field* at *line* to *value*.
     \t`points`: Show point values
     \t`help`: Show this help
     \t`info`: Show info on Pointinator\n
+    \t`c`: Send a chat message in this channel without Pointinator interpreting it as a command
     Drill commands:
-    \t`drill add <p> <n> <mat>`: Record *n* drill *mat*erials for a participant *p* 
-    \t`drill show`: Show a comprehensive report of drill materials
-    \t`drill summary`: Show a summary of drill materials
-    \t`drill progress`: Show a summary of drill progress
-    \t`drill undo`: Undo the last change to the drill sheet
-    \t`drill audit <n>`: Show the last *n* sheet actions
-    \t`drill reset`: Wipe the drill sheet
+    \t`dr a <p> <n> <mat>`: Record *n* drill *mat*erials for a participant *p* 
+    \t`dr show`: Show a comprehensive report of drill materials
+    \t`dr summary`: Show a summary of drill materials
+    \t`dr progress`: Show a summary of drill progress
+    \t`dr z`: Undo the last change to the drill sheet
+    \t`dr audit <n>`: Show the last *n* sheet actions
+    \t`dr r`: Wipe the drill sheet
     """
     return res
 
 def msg_points():
-    res = """Point values:
+    res = """
+    Point values:
     \t**S guild missions**: 1 point
     \t**M guild missions**: 2 points
     \t**L guild missions**: 3 points
@@ -422,20 +430,14 @@ def msg_points():
     return res
 
 def msg_info():
-    res = """**Pointinator** helps keep track of guild points. It was developed by Yidingbai.
+    res = """
+        Welcome to **Pointinator**, a Discord bot that keeps track of points.
         
-        *Using Pointinator*
-        Type Pointinator commands into the chat box in the #points channel. Type `help` to see all of my functions.
+        *About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
         
-        *Functions*
-        I can add and split points to one or more participants at once. Once a participant has been added, I will try to recognise nicknames for that participant using partial and wildcard matches. If you make a mistake, you can undo up to three times in a row.
+        *Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`.
         
-        *Service status*
-        Pointinator should be available as long as I am online on Discord. Check my online status in the members list. Please note that I undergo nightly maintenance at 4:00 UTC+0 for up to an hour.
-        
-        *Terms*
-        Use of Pointinator is subject to terms of service <https://aisiydb.ddns.net/pointinator-terms-of-service/> and privacy policy <https://aisiydb.ddns.net/pointinator-privacy-policy/>. Pointinator is open-source software and the source code can be found here: <https://aisiydb.ddns.net/pointinator-source-code/>.
-        
+        *Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
         """
     return res
 

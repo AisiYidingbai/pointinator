@@ -585,6 +585,8 @@ def on_command(command):                                                        
             ret = msg_queue_approve()
         elif(parsed[1] == "d" or parsed[1] == "deny"):
             ret = msg_queue_deny()
+        elif(len(parsed) > 2 and parsed[1] == "q" or len(parsed) > 2 and parsed[1] == "queue"):
+            ret = msg_queue_add(parsed[2], ' '.join(parsed[3:]))
         else:
             ret = msg_queue_show()
     elif(keyword == "h" or keyword == "help"):

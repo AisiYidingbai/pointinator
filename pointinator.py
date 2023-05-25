@@ -379,7 +379,7 @@ def msg_help():
 def msg_man():
     res = """
     Usage:
-    \t`a <p ...> <n>`: Award *n* points to one or more participants *p*
+    \t`a <p ...> <n>`: Award *n* points each to one or more participants *p*
     \t`s <p ...> <n>`: Divide *n* points between participants *p*
     \t`o <p> <n>`: Add *n* tiers to a participant *p*
     \t`n <p>`: Add a new participant *p*
@@ -436,6 +436,8 @@ def msg_info():
         *About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
         
         *Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`.
+        
+        *Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
         
         *Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
         """

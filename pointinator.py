@@ -379,36 +379,37 @@ def msg_help():
 def msg_man():
     res = """
     Usage:
-    \t`a <p ...> <n>`: Award *n* points each to one or more participants *p*
-    \t`s <p ...> <n>`: Divide *n* points between participants *p*
-    \t`o <p> <n>`: Add *n* tiers to a participant *p*
-    \t`n <p>`: Add a new participant *p*
-    \t`show`: Show the current sheet
-    \t`del <p>`: Delete a participant *p*
-    \t`z`: Undo the last change
-    \t`q`: Show the queue
-    \t`q a`: Approve the request at the top of the queue
-    \t`q d`: Decline the request at the top of the queue
-    \t`q q <requestor> <request>`: Manually add an entry to the queue with *requestor* and *request*
-    \t`r`: Wipe the sheet
-    \t`audit <n>`: Show the last *n* sheet actions
-    \t`tiers`: Show the current point requirements per tier
-    \t`whois <name>`: See if I can recognise a participant *name*
-    \t`set <param> <value>`: Change a Pointinator *param*eter to *value*
-    \t`params`: Show all Pointinator parameters
-    \t`edit <field> <line> <value>`: Change a sheet entry in *field* at *line* to *value*.
-    \t`points`: Show point values
-    \t`help`: Show this help
-    \t`info`: Show info on Pointinator\n
-    \t`c`: Send a chat message in this channel without Pointinator interpreting it as a command
+    \t`a <p ...> <n>`: **Add** *n* points each to one or more *p*articipants
+    \t`s <p ...> <n>`: **Split** *n* points between *p*articipants
+    \t`o <p> <n>`: **Offset** *n* tiers to a *p*articipant
+    \t`n <p>`: Add a **new** *p*articipant
+    \t`show`: **Show** the current sheet
+    \t`del <p>`: **Delete** a *p*articipant
+    \t`z`: **Undo** the last change
+    \t`q`: Show the **queue**
+    \t`q a`: **Approve** the request at the top of the **queue**
+    \t`q d`: **Decline** the request at the top of the **queue**
+    \t`q q <requestor> <request>`: Manually add an entry to the **queue** with *requestor* and *request*
+    \t`r`: **Reset** the sheet
+    \t`audit <n>`: Show the last *n* actions of the **audit** log
+    \t`tiers`: Show the current point requirements per **tier**
+    \t`whois <nickname>`: See if I can convert a *nickname* to a participant already on the board
+    \t`set <param> <value>`: **Set** a Pointinator *param*eter to *value*
+    \t`params`: Show all Pointinator **parameters**
+    \t`edit <field> <line> <value>`: **Edit** a sheet entry in *field* at *line* to *value*.
+    \t`points`: Show **point** values
+    \t`help`: Show this **help**
+    \t`info`: Show **info** on Pointinator
+    \t`c <...>`: Send a **chat** message in this channel without Pointinator interpreting it as a command
+    
     Drill commands:
-    \t`dr a <p> <n> <mat>`: Record *n* drill *mat*erials for a participant *p* 
-    \t`dr show`: Show a comprehensive report of drill materials
-    \t`dr summary`: Show a summary of drill materials
-    \t`dr progress`: Show a summary of drill progress
-    \t`dr z`: Undo the last change to the drill sheet
-    \t`dr audit <n>`: Show the last *n* sheet actions
-    \t`dr r`: Wipe the drill sheet
+    \t`dr a <p> <n> <mat>`: **Add** *n* drill *mat*erials for a participant *p* 
+    \t`dr show`: **Show** a comprehensive report of drill materials
+    \t`dr summary`: Show a **summary** of drill materials
+    \t`dr progress`: Show a summary of drill **progress**
+    \t`dr z`: **Undo** the last change to the drill sheet
+    \t`dr audit <n>`: Show the last *n* actions of the dill **audit** log
+    \t`dr r`: **Reset** the drill sheet
     """
     return res
 
@@ -419,10 +420,6 @@ def msg_points():
     \t**M guild missions**: 2 points
     \t**L guild missions**: 3 points
     \t**XL guild missions**: 4 points
-    \t**S [Boss Subjugation] missions**: 1 point
-    \t**M [Boss Subjugation] missions**: 2 points
-    \t**L [Boss Subjugation] missions**: 3 points
-    \t**XL [Boss Subjugation] missions**: 4 points
     \t**Attending guild events**: 2 points
     \t**Depositing a [Guild] Steel Candidum Shell**: 16 points
     \t**Depositing [Guild] Drill materials**: see `drill` commands

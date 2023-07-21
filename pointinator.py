@@ -8,6 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
+ver = "2.0.1"
+
 # Import packages
 import os                         # File I/O
 import re                         # Text matching
@@ -1095,10 +1097,16 @@ def drill_reset(message, parsed):
 
 def drill_show(message, parsed):
     colour = discord.Colour.gold()
+    drill = act_drill_show()
+    drill1 = drill.iloc[0:8]
+    drill2 = drill.iloc[9:16]
+    drill3 = drill.iloc[17:24]
     content1 = command_echo(message)
     content2 = "Here's the drill sheet."
-    content3 = "```" + str(act_drill_show()) + "```"
-    content = [content1, content2, content3]
+    content3 = "```" + str(drill1) + "```"
+    content4 = "```" + str(drill2) + "```"
+    content5 = "```" + str(drill3) + "```"
+    content = [content1, content2, content3, content4, content5]
     send = channel_respond(message, colour, content)
     return send
 
@@ -1118,19 +1126,19 @@ def drill_tail(message, parsed):
     operands = len(parsed)
     if operands < 2:
         lines = 6
-    elif re.search("^\d+$", parsed[1]):
-        lines = parsed[1]
+    elif re.search("^\d+$", parsed[2]):
+        lines = int(parsed[2])
     else:
         lines = 6
     # Execute
-    lines = min(16, lines)
+    lines = min(10, lines)
     drill = io_drill_load()
     sli = drill.iloc[-int(lines):]
-    cols = ['Participant', 'Value', 'Type', 'Date']
+    cols = ['Participant', 'Item', 'Amount', 'Date']
     sli = sli[cols]
-    content1 = "Here are the last " + str(lines) + " lines of the drill sheet."
-    content2 = sli[cols]
-    content = [content1, content2]
+    content2 = "Here are the last " + str(lines) + " lines of the drill sheet."
+    content3 = "```" + str(sli) + "```"
+    content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
     return send
 

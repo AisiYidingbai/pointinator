@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.3"
+ver = "2.0.4"
 
 # Import packages
 import os                         # File I/O
@@ -561,41 +561,41 @@ def points_man(message, parsed):
     content1 = command_echo(message)
     
     content2 = "\nPoints commands:"
-    content2 = content2 + "\t\n" + man("add")
-    content2 = content2 + "\t\n" + man("split")
-    content2 = content2 + "\t\n" + man("offset")
-    content2 = content2 + "\t\n" + man("new")
-    content2 = content2 + "\t\n" + man("show")
-    content2 = content2 + "\t\n" + man("delete")
-    content2 = content2 + "\t\n" + man("undo")
-    content2 = content2 + "\t\n" + man("reset")
-    content2 = content2 + "\t\n" + man("tail")
-    content2 = content2 + "\t\n" + man("tiers")
-    content2 = content2 + "\t\n" + man("whois")
-    content2 = content2 + "\t\n" + man("set")
-    content2 = content2 + "\t\n" + man("get")
-    content2 = content2 + "\t\n" + man("edit")
-    content2 = content2 + "\t\n" + man("points")
-    content2 = content2 + "\t\n" + man("help")
-    content2 = content2 + "\t\n" + man("info")
-    content2 = content2 + "\t\n" + man("chat")
+    content2 = content2 + "\n\t" + man("add")
+    content2 = content2 + "\n\t" + man("split")
+    content2 = content2 + "\n\t" + man("offset")
+    content2 = content2 + "\n\t" + man("new")
+    content2 = content2 + "\n\t" + man("show")
+    content2 = content2 + "\n\t" + man("delete")
+    content2 = content2 + "\n\t" + man("undo")
+    content2 = content2 + "\n\t" + man("reset")
+    content2 = content2 + "\n\t" + man("tail")
+    content2 = content2 + "\n\t" + man("tiers")
+    content2 = content2 + "\n\t" + man("whois")
+    content2 = content2 + "\n\t" + man("set")
+    content2 = content2 + "\n\t" + man("get")
+    content2 = content2 + "\n\t" + man("edit")
+    content2 = content2 + "\n\t" + man("points")
+    content2 = content2 + "\n\t" + man("help")
+    content2 = content2 + "\n\t" + man("info")
+    content2 = content2 + "\n\t" + man("chat")
     
     content2 = content2 + "\n\nDrill commands:"
-    content2 = content2 + "\t\n" + man("drill add")
-    content2 = content2 + "\t\n" + man("drill show")
-    content2 = content2 + "\t\n" + man("drill summary")
-    content2 = content2 + "\t\n" + man("drill progress")
-    content2 = content2 + "\t\n" + man("drill undo")
-    content2 = content2 + "\t\n" + man("drill tail")
-    content2 = content2 + "\t\n" + man("drill reset")
-    content2 = content2 + "\t\n" + man("drill edit")
+    content2 = content2 + "\n\t" + man("drill add")
+    content2 = content2 + "\n\t" + man("drill show")
+    content2 = content2 + "\n\t" + man("drill summary")
+    content2 = content2 + "\n\t" + man("drill progress")
+    content2 = content2 + "\n\t" + man("drill undo")
+    content2 = content2 + "\n\t" + man("drill tail")
+    content2 = content2 + "\n\t" + man("drill reset")
+    content2 = content2 + "\n\t" + man("drill edit")
     
     content2 = content2 + "\n\nQueue commands:"
-    content2 = content2 + "\t\n" + man("queue")
-    content2 = content2 + "\t\n" + man("queue approve")
-    content2 = content2 + "\t\n" + man("queue deny")
-    content2 = content2 + "\t\n" + man("queue queue")
-    content2 = content2 + "\t\n" + man("queue undo")
+    content2 = content2 + "\n\t" + man("queue")
+    content2 = content2 + "\n\t" + man("queue approve")
+    content2 = content2 + "\n\t" + man("queue deny")
+    content2 = content2 + "\n\t" + man("queue queue")
+    content2 = content2 + "\n\t" + man("queue undo")
     content2 = content2 + "\n"
     
     content = [content1, content2]

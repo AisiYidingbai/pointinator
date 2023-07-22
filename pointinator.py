@@ -592,7 +592,7 @@ def points_man(message, parsed):
     
     content2 = content2 + "\n\nQueue commands:"
     content2 = content2 + "\t\n" + man("queue")
-    content2 = content2 + "\t\n" + man("queue add")
+    content2 = content2 + "\t\n" + man("queue approve")
     content2 = content2 + "\t\n" + man("queue deny")
     content2 = content2 + "\t\n" + man("queue queue")
     content2 = content2 + "\t\n" + man("queue undo")
@@ -712,7 +712,7 @@ def points_points(message, parsed):
     colour = discord.Colour.greyple()
     content1 = command_echo(message)
     content2 = """
-\nPoint values:
+Point values:
 \t**S guild missions**: 1 point
 \t**M guild missions**: 2 points
 \t**L guild missions**: 3 points

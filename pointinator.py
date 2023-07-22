@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.1"
+ver = "2.0.2"
 
 # Import packages
 import os                         # File I/O
@@ -124,7 +124,7 @@ def man(x):
     if (x == "drill undo"):       r = "`dr z`: **Undo** the last change to the drill sheet."
     if (x == "drill tail"):       r = "`dr audit <n>`: **Tail** the last *n* actions of the drill sheet."
     if (x == "drill reset"):      r = "`dr r`: **Reset** the drill sheet."
-    if (x == "drill edit"):       r = "`dr edit <row> <column> <value>: **Edit** the drill sheet at *row* and *column* to *value*. *column* must be one of `Item`, `Participant`, or `Amount`."
+    if (x == "drill edit"):       r = "`dr edit <row> <column> <value>`: **Edit** the drill sheet at *row* and *column* to *value*. *column* must be one of `Item`, `Participant`, or `Amount`."
     
     if (x == "queue"):            r = "`q`: Show the **queue**."
     if (x == "queue approve"):    r = "`q a`: **Approve** the request at the top of the **queue**."
@@ -324,6 +324,7 @@ def act_queue_delete(requestor, request):
 
 def act_queue_show():
     queue = io_queue_load()
+    queue = queue[['Requestor', 'Request', 'Time']]
     return queue
 
 def act_queue_approve(message):
@@ -422,7 +423,7 @@ def points_add(message, parsed):
                     else: participants = participants + participant + ", "
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
-            content2 = rng(["A team effort", "Teamwork makes the dream work", "Good job, crew", "Well done everyone"]) + ", " + participants + " each got " + str(value) + " points."
+            content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
@@ -452,7 +453,7 @@ def points_delete(message, parsed):
             if participant:
                 sheet = act_points_delete(participant, sheet)
                 io_points_save(sheet)
-                content2 = rng(["Seeya"]) + ", " + participant + "."
+                content2 = rng(["Removing from the board"]) + ", " + participant + "."
                 content3 = "```" + str(act_points_show()) + "```"
                 content = [content1, content2, content3]
             else:
@@ -469,7 +470,7 @@ def points_delete(message, parsed):
             if len(participants) > 0:
                 io_points_save(sheet)
                 participants = ", ".join(participants)
-                content2 = rng(["Seeya"]) + ", " + participants + "."
+                content2 = rng(["Removing from the board"]) + ", " + participants + "."
                 content3 = "```" + str(act_points_show()) + "```"
                 content = [content1, content2, content3]
             else:
@@ -630,7 +631,7 @@ def points_new(message, parsed):
             participant = parsed[1]
             sheet = act_points_new(participant, sheet)
             io_points_save(sheet)
-            content2 = rng(["Welcome"]) + " " + participant + "."
+            content2 = rng(["Adding to the board"]) + " " + participant + "."
             content = [content1, content2]
         else:
             participants = ""
@@ -642,7 +643,7 @@ def points_new(message, parsed):
                     else: participants = participants + participant + ", "
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
-            content2 = rng(["Welcome"]) + ", " + participants + "."
+            content2 = rng(["Adding to the board"]) + ", " + participants + "."
             content = [content1, content2]
         send = channel_respond(message, colour, content)
         return send
@@ -677,7 +678,7 @@ def points_offset(message, parsed):
             if not participant: participant = string
             sheet = act_points_add(participant, value, "tier", sheet)
             io_points_save(sheet)
-            content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", " + str(value) + " tiers were given to " + participant + "."
+            content2 = rng(["Gotcha"]) + ", " + str(value) + " tiers were given to " + participant + "."
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
         else:
@@ -693,7 +694,7 @@ def points_offset(message, parsed):
                     else: participants = participants + participant + ", "
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
-            content2 = rng(["A team effort", "Teamwork makes the dream work", "Good job, crew", "Well done everyone"]) + ", " + participants + " each got " + str(value) + " tiers. The original points value was " + str(parsed[-1]) + "."
+            content2 = rng(["Nice"]) + ", " + participants + " each got " + str(value) + " tiers. The original points value was " + str(parsed[-1]) + "."
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
@@ -740,15 +741,16 @@ def points_queue(message, parsed):
             request = queue.iloc[0,1]
             time = queue.iloc[0,2]
             global passthrough
-            content2 = "Approved request `" + request + "` by " + requestor + " at " + time + "."
-            if len(queue) > 0:
-                content3 = "```" + str(act_queue_show()) + "```"
-                content = [content1, content2, content3]
-            else:
-                content = [content1, content2]
             passthrough = True
             content_queued = act_queue_approve(message)
             passthrough = False
+            queue = act_queue_show()
+            content2 = "Approved request `" + request + "` by " + requestor + " at " + time + "."
+            if len(queue) > 0:
+                content3 = "```" + str(queue) + "```"
+                content = [content1, content2, content3]
+            else:
+                content = [content1, content2]
             content = content + content_queued
         else:
             content2 = "The queue is currently empty."
@@ -761,15 +763,16 @@ def points_queue(message, parsed):
             time = queue.iloc[0,2]
             act_queue_deny()
             content2 = "Denied request `" + request + "` by " + requestor + " at " + time + "."
+            queue = act_queue_show()
             if len(queue) > 0:
-                content3 = "```" + str(act_queue_show()) + "```"
+                content3 = "```" + str(queue) + "```"
                 content = [content1 + content2 + content3]
             else:
                 content = [content1 + content2]
         else:
             content2 = "The queue is currently empty."
             content = [content1, content2]
-    elif (parsed[1] == "q"):
+    elif (parsed[1] == "q" or parsed[1] == "queue"):
         if len(parsed) < 4:
             content2 = "Error in `queue queue`: not enough operands passed.\nUsage: " + man("queue queue")
             content = [content1, content2]
@@ -785,6 +788,21 @@ def points_queue(message, parsed):
                 content2 = "Manually adding `" + str(requestor) + "`'s request `" + str(request) + "` to the queue."
                 content3 = "```" + str(queue) + "```"
                 content = [content1, content2, content3]
+    elif (parsed[1] == "z" or parsed[1] == "undo"):
+        if not os.path.exists(bak1_queue):
+            content2 = "Cannot `queue undo`: no undos remaining."
+            content = [content1, content2]
+        else:
+            act_queue_undo()
+            queue = io_queue_load()
+            if len(queue) > 0:
+                lastmodified = max(queue['Time'])
+                content2 = "Rolling back to queue as of " + str(lastmodified)
+                content3 = "```" + str(queue) + "```"
+                content = [content1, content2, content3]
+            else:
+                content2 = "Undid the last queue entry. It's empty now."
+                content = [content1, content2]
     else:
         queue = act_queue_show()
         entries = len(queue)
@@ -898,7 +916,7 @@ def points_split(message, parsed):
                     else: participants = participants + participant + ", "
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
-            content2 = rng(["A team effort", "Teamwork makes the dream work", "Good job, crew", "Well done everyone"]) + ", " + participants + " each got " + str(value) + " points."
+            content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
@@ -988,24 +1006,26 @@ def points_undo(message, parsed):
             content2 = "Rolling back to the sheet as of " + str(lastmodified)
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
-        send = channel_respond(message, colour, content)
-        return send
     # If not officer
     else:
         colour = discord.Colour.greyple()
         content1 = command_echo(message)
-        act_queue_undo()
-        queue = io_queue_load()
-        if len(queue) > 0:
-            lastmodified = max(queue['Date'])
-            content2 = "Rolling back to queue as of " + str(lastmodified)
-            content3 = "```" + str(queue) + "```"
-            content = [content1, content2, content3]
-        else:
-            content2 = "Undid the last queue entry. It's empty now."
+        if not os.path.exists(bak1_queue):
+            content2 = "Cannot `undo`: no queue undos remaining."
             content = [content1, content2]
-        send = channel_respond(message, colour, content)
-        return send
+        else:
+            act_queue_undo()
+            queue = io_queue_load()
+            if len(queue) > 0:
+                lastmodified = max(queue['Time'])
+                content2 = "Rolling back to queue as of " + str(lastmodified)
+                content3 = "```" + str(queue) + "```"
+                content = [content1, content2, content3]
+            else:
+                content2 = "Undid the last queue entry. It's empty now."
+                content = [content1, content2]
+    send = channel_respond(message, colour, content)
+    return send
     
 def points_syntax(message, parsed):
     colour = discord.Colour.teal()
@@ -1050,7 +1070,7 @@ def drill_add(message, parsed):
             if not material:
                 content2 = "Error in `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
             act_drill_add(participant, value, material)
-            content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", added " + str(value) + " " + material + " to " + participant + "."
+            content2 = rng(["Great"]) + ", added " + str(value) + " " + material + " to " + participant + "."
             content3 = "```" + str(act_drill_show()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
@@ -1200,7 +1220,7 @@ def queue_add(message, parsed):
         content = [content1, content2]
     else:
         act_queue_add(requestor, request)
-        content2 = rng(["Thanks", "Nice one", "Gotcha", "Understood"]) + ", your request `" + request + "` has been sent to officers for approval."
+        content2 = rng(["Thanks", "Nice one", "Gotcha", "Understood", "Thanks for the helmp"]) + ", your request `" + request + "` has been sent to officers for approval."
         content3 = "```" + str(act_queue_show()) + "```"
         content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
@@ -1222,7 +1242,7 @@ def roles_give(message, parsed):
             roleid = discord.utils.get(message.guild.roles, name = role)
             send = [act_roles_give(message, roleid)]
             sends = sends + send
-            content1 = "Added you to " + role + "."
+            content1 = "Adding you to " + role + "."
             content = [content1]
         else:
             content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)

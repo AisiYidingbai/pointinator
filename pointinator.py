@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.2"
+ver = "2.0.3"
 
 # Import packages
 import os                         # File I/O
@@ -96,7 +96,7 @@ def is_officer(x):                                                             #
     return r
 
 def man(x):
-    if (x == "add"):              r = "`a <p ...> <n>`: **Add** *n* points *p*articipants."
+    if (x == "add"):              r = "`a <p ...> <n>`: **Add** *n* points to *p*articipants."
     if (x == "chat"):             r = "`c <...>`: Send a **chat** message in the #points channel without Pointinator interpreting it as a command."
     if (x == "delete"):           r = "`del <p ...>`: **Delete** *p*articipants."
     if (x == "edit"):             r = "`edit <row> <column> <value>`: **Edit** the sheet at *row* and *column* to *value*. *column* must be one of `Participant`, `Type`, or `Value`."
@@ -127,9 +127,10 @@ def man(x):
     if (x == "drill edit"):       r = "`dr edit <row> <column> <value>`: **Edit** the drill sheet at *row* and *column* to *value*. *column* must be one of `Item`, `Participant`, or `Amount`."
     
     if (x == "queue"):            r = "`q`: Show the **queue**."
-    if (x == "queue approve"):    r = "`q a`: **Approve** the request at the top of the **queue**."
-    if (x == "queue deny"):       r = "`q d`: **Deny** the request at the top of the **queue**."
+    if (x == "queue approve"):    r = "`q a`: **Approve** the request at the top of the queue."
+    if (x == "queue deny"):       r = "`q d`: **Deny** the request at the top of the queue."
     if (x == "queue queue"):      r = "`q q <requestor> <request>`: Manually add an entry to the **queue** with *requestor* and *request*."
+    if (x == "queue undo"):       r = "`q z`: **Undo** the last change to the queue."
     return r
 
 def rng(x):
@@ -559,36 +560,43 @@ def points_man(message, parsed):
     colour = discord.Colour.teal()
     content1 = command_echo(message)
     
-    content2 = "Points commands:"
-    content2 = content2 + "\n" + man("add")
-    content2 = content2 + "\n" + man("split")
-    content2 = content2 + "\n" + man("offset")
-    content2 = content2 + "\n" + man("new")
-    content2 = content2 + "\n" + man("show")
-    content2 = content2 + "\n" + man("delete")
-    content2 = content2 + "\n" + man("undo")
-    content2 = content2 + "\n" + man("queue")
-    content2 = content2 + "\n" + man("reset")
-    content2 = content2 + "\n" + man("tail")
-    content2 = content2 + "\n" + man("tiers")
-    content2 = content2 + "\n" + man("whois")
-    content2 = content2 + "\n" + man("set")
-    content2 = content2 + "\n" + man("get")
-    content2 = content2 + "\n" + man("edit")
-    content2 = content2 + "\n" + man("points")
-    content2 = content2 + "\n" + man("help")
-    content2 = content2 + "\n" + man("info")
-    content2 = content2 + "\n" + man("chat")
+    content2 = "\nPoints commands:"
+    content2 = content2 + "\t\n" + man("add")
+    content2 = content2 + "\t\n" + man("split")
+    content2 = content2 + "\t\n" + man("offset")
+    content2 = content2 + "\t\n" + man("new")
+    content2 = content2 + "\t\n" + man("show")
+    content2 = content2 + "\t\n" + man("delete")
+    content2 = content2 + "\t\n" + man("undo")
+    content2 = content2 + "\t\n" + man("reset")
+    content2 = content2 + "\t\n" + man("tail")
+    content2 = content2 + "\t\n" + man("tiers")
+    content2 = content2 + "\t\n" + man("whois")
+    content2 = content2 + "\t\n" + man("set")
+    content2 = content2 + "\t\n" + man("get")
+    content2 = content2 + "\t\n" + man("edit")
+    content2 = content2 + "\t\n" + man("points")
+    content2 = content2 + "\t\n" + man("help")
+    content2 = content2 + "\t\n" + man("info")
+    content2 = content2 + "\t\n" + man("chat")
     
     content2 = content2 + "\n\nDrill commands:"
-    content2 = content2 + "\n" + man("drill add")
-    content2 = content2 + "\n" + man("drill show")
-    content2 = content2 + "\n" + man("drill summary")
-    content2 = content2 + "\n" + man("drill progress")
-    content2 = content2 + "\n" + man("drill undo")
-    content2 = content2 + "\n" + man("drill tail")
-    content2 = content2 + "\n" + man("drill reset")
-    content2 = content2 + "\n" + man("drill edit")
+    content2 = content2 + "\t\n" + man("drill add")
+    content2 = content2 + "\t\n" + man("drill show")
+    content2 = content2 + "\t\n" + man("drill summary")
+    content2 = content2 + "\t\n" + man("drill progress")
+    content2 = content2 + "\t\n" + man("drill undo")
+    content2 = content2 + "\t\n" + man("drill tail")
+    content2 = content2 + "\t\n" + man("drill reset")
+    content2 = content2 + "\t\n" + man("drill edit")
+    
+    content2 = content2 + "\n\nQueue commands:"
+    content2 = content2 + "\t\n" + man("queue")
+    content2 = content2 + "\t\n" + man("queue add")
+    content2 = content2 + "\t\n" + man("queue deny")
+    content2 = content2 + "\t\n" + man("queue queue")
+    content2 = content2 + "\t\n" + man("queue undo")
+    content2 = content2 + "\n"
     
     content = [content1, content2]
     send = channel_respond(message, colour, content)
@@ -598,16 +606,12 @@ def points_info(message, parsed):
     colour = discord.Colour.teal()
     content1 = command_echo(message)
     content2 = """
-        Welcome to **Pointinator**, a Discord bot that keeps track of points.
-        
-        *About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
-        
-        *Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`.
-        
-        *Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
-        
-        *Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
-        """
+\tWelcome to **Pointinator**, a Discord bot that keeps track of points.
+\n\t*About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
+\n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`.
+\n\t*Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
+\n\t*Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
+"""
     content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send
@@ -708,15 +712,15 @@ def points_points(message, parsed):
     colour = discord.Colour.greyple()
     content1 = command_echo(message)
     content2 = """
-        Point values:
-        \t**S guild missions**: 1 point
-        \t**M guild missions**: 2 points
-        \t**L guild missions**: 3 points
-        \t**XL guild missions**: 4 points
-        \t**Attending guild events**: 2 points
-        \t**Depositing a [Guild] Steel Candidum Shell**: 16 points
-        \t**Depositing [Guild] Drill materials**: see `drill` commands
-        """
+\nPoint values:
+\t**S guild missions**: 1 point
+\t**M guild missions**: 2 points
+\t**L guild missions**: 3 points
+\t**XL guild missions**: 4 points
+\t**Attending guild events**: 2 points
+\t**Depositing a [Guild] Steel Candidum Shell**: 16 points
+\t**Depositing [Guild] Drill materials**: see `drill` commands
+"""
     content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send
@@ -785,7 +789,7 @@ def points_queue(message, parsed):
             else:
                 act_queue_add(requestor, request)
                 queue = act_queue_show()
-                content2 = "Manually adding `" + str(requestor) + "`'s request `" + str(request) + "` to the queue."
+                content2 = "Manually adding " + str(requestor) + "'s request `" + str(request) + "` to the queue."
                 content3 = "```" + str(queue) + "```"
                 content = [content1, content2, content3]
     elif (parsed[1] == "z" or parsed[1] == "undo"):

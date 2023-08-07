@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.5"
+ver = "2.0.6"
 
 # Import packages
 import os                         # File I/O
@@ -1085,7 +1085,7 @@ def drill_add(message, parsed):
                 content2 = "Error in `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
             act_drill_add(participant, value, material)
             content2 = rng(["Great"]) + ", added " + str(value) + " " + material + " to " + participant + "."
-            content3 = "```" + str(act_drill_show()) + "```"
+            content3 = "```" + str(act_drill_summary()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -1182,7 +1182,7 @@ def drill_undo(message, parsed):
             drill = io_drill_load()
             lastmodified = max(drill['Date'])
             content2 = "Rolling back to the drill sheet as of " + str(lastmodified)
-            content3 = "```" + str(act_drill_show()) + "```"
+            content3 = "```" + str(act_drill_summary()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send

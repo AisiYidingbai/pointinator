@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.4"
+ver = "2.0.5"
 
 # Import packages
 import os                         # File I/O
@@ -138,7 +138,7 @@ def rng(x):
     return r
 
 def command_echo(x):
-    r = "*Your command: *`" + re.sub("[*`]", "", x.content) + "`" + "\n"
+    r = "*Your command:  *`" + re.sub("[*`]", "", x.content) + "`" + "\n"
     return r
 
 #%% Actions: points
@@ -181,9 +181,13 @@ def act_points_show():
     logt11 = min(logcurrentmax, logcap)
     points['Tier'] = np.ceil(points['LogPoints'] / logt11 * (params['tcap']-1) + 1)   # calculate the current tiers
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value']                                 # pivot the sheet for tiers
-    board = points.join(offsets, on = "Participant", how = "left", rsuffix = ".tier")  # join tiers to point sheet
+    board = points.join(offsets, on = "Participant", how = "outer", rsuffix = ".tier")  # join tiers to point sheet
+    board = board.set_index('Participant')
     board['Value.tier'][np.isnan(board['Value.tier'])] = 0
+    board['Value'][np.isnan(board['Value'])] = 0
+    board['Tier'][np.isnan(board['Tier'])] = 0
     board['Tier'] = np.minimum(np.minimum(board['Tier'], params['tcap']) + board['Value.tier'], params['thardcap']) # don't let the tier exceed the max
+    board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
     board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers
     board['Points'] = board['Value']
     cols = ['Points', 'Tier']
@@ -375,10 +379,16 @@ def channel_respond(message, colour, content):
             send = message.channel.send(content[0] + content[1])
         # Content length greater than 2 means sheet to show
         else:
-            embed = discord.Embed(title = content[0], color = colour)
-            for i in list(range(1, len(content))): embed.add_field(name = "", value = content[i], inline=False)
-            embed.set_footer(text = "by Yidingbai :)")
-            send = message.channel.send(embed = embed)
+            # Use plaintext if any contents are giga long (>1024)
+            if any(len(c) > 1024 for c in content):
+                content = ''.join(content)
+                send = message.channel.send(content)
+            # Use embeds if none are greater than 1024 characters
+            else:
+                embed = discord.Embed(title = content[0], color = colour)
+                for i in list(range(1, len(content))): embed.add_field(name = "", value = content[i], inline=False)
+                embed.set_footer(text = "by Yidingbai :)")
+                send = message.channel.send(embed = embed)
         return send
 
 #%% Points functions
@@ -394,7 +404,7 @@ def points_add(message, parsed):
         if operands < 3:
             content2 = "Error in `add`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("add")
             content = [content1, content2]
-        elif not re.search("^-*\d+$", value):
+        elif not re.search("^-*\d+\.*\d*$", value):
             content2 = "Error in `add`: expected a number for points, got `" + value + "`.\nUsage: " + man("add")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE) and interpret(parsed[1], sheet['Participant']) is None:
@@ -698,7 +708,7 @@ def points_offset(message, parsed):
                     else: participants = participants + participant + ", "
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
-            content2 = rng(["Nice"]) + ", " + participants + " each got " + str(value) + " tiers. The original points value was " + str(parsed[-1]) + "."
+            content2 = rng(["Nice"]) + ", " + participants + " each got " + str(value) + " tiers."
             content3 = "```" + str(act_points_show()) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
@@ -890,7 +900,7 @@ def points_split(message, parsed):
         if operands < 3:
             content2 = "Error in `split`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("split")
             content = [content1, content2]
-        elif not re.search("^-*\d+$", value):
+        elif not re.search("^-*\d+\.*\d*$", value):
             content2 = "Error in `split`: expected a number for points, got `" + value + "`.\nUsage: " + man("split")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE)  and interpret(parsed[1], sheet['Participant']) is None:
@@ -1088,13 +1098,10 @@ def drill_add(message, parsed):
 def drill_progress(message, parsed):
     colour = discord.Colour.gold()
     progress = act_drill_progress()
-    progress1 = progress.iloc[0:8]
-    progress2 = progress.iloc[10:15]
     content1 = command_echo(message)
     content2 = "Here's the current drill progress."
-    content3 = "```" + str(progress1) + "```"
-    content4 = "```" + str(progress2) + "```"
-    content = [content1, content2, content3, content4]
+    content3 = "```" + str(progress) + "```"
+    content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
     return send
 
@@ -1122,15 +1129,10 @@ def drill_reset(message, parsed):
 def drill_show(message, parsed):
     colour = discord.Colour.gold()
     drill = act_drill_show()
-    drill1 = drill.iloc[0:8]
-    drill2 = drill.iloc[9:16]
-    drill3 = drill.iloc[17:24]
     content1 = command_echo(message)
     content2 = "Here's the drill sheet."
-    content3 = "```" + str(drill1) + "```"
-    content4 = "```" + str(drill2) + "```"
-    content5 = "```" + str(drill3) + "```"
-    content = [content1, content2, content3, content4, content5]
+    content3 = "```" + str(drill) + "```"
+    content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
     return send
 
@@ -1403,7 +1405,7 @@ if not (hasattr(main, "__file__")):
     member.roles = ""
     member.bot = False
     message.author = member
-    message.content = ""
+    message.content = "show"
 
 file_points = args.workdir + "/pointinator.txt"
 bak1_points = args.workdir + "/pointinator.bak1.txt"

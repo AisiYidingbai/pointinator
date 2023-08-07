@@ -183,9 +183,9 @@ def act_points_show():
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value']                                 # pivot the sheet for tiers
     board = points.join(offsets, on = "Participant", how = "outer", rsuffix = ".tier")  # join tiers to point sheet
     board = board.set_index('Participant')
-    board['Value.tier'][np.isnan(board['Value.tier'])] = 0
-    board['Value'][np.isnan(board['Value'])] = 0
-    board['Tier'][np.isnan(board['Tier'])] = 0
+    board['Value.tier'][np.isnan(board['Value.tier'])] = 0 # set zero tiers for participants with no offsets
+    board['Value'][np.isnan(board['Value'])] = 0 # set zero points for participants with yes offsets but no points
+    board['Tier'][np.isnan(board['Tier'])] = 1 # set 1 tier for participants with yes offsets but no points
     board['Tier'] = np.minimum(np.minimum(board['Tier'], params['tcap']) + board['Value.tier'], params['thardcap']) # don't let the tier exceed the max
     board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
     board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers

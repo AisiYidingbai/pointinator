@@ -8,7 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.0.7"
+ver = "2.1"
+updated = "29-Aug-2023"
 
 # Import packages
 import os                         # File I/O
@@ -122,7 +123,7 @@ def man(x):
     if (x == "drill summary"):    r = "`dr summary`: Show a **summary** of drill materials."
     if (x == "drill progress"):   r = "`dr progress`: Show a summary of drill **progress**."
     if (x == "drill undo"):       r = "`dr z`: **Undo** the last change to the drill sheet."
-    if (x == "drill tail"):       r = "`dr audit <n>`: **Tail** the last *n* actions of the drill sheet."
+    if (x == "drill tail"):       r = "`dr tail <n>`: **Tail** the last *n* actions of the drill sheet."
     if (x == "drill reset"):      r = "`dr r`: **Reset** the drill sheet."
     if (x == "drill edit"):       r = "`dr edit <row> <column> <value>`: **Edit** the drill sheet at *row* and *column* to *value*. *column* must be one of `Item`, `Participant`, or `Amount`."
     
@@ -176,10 +177,15 @@ def act_points_show():
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])
-    logcurrentmax = max(points['LogPoints'])                                               # 1. log(high score)
-    logcap = np.power(int(params['cap']), (int(params['tcap'])-1)/(int(params['tcap'])-2)) # 2. Calculated from cap
-    logt11 = min(logcurrentmax, logcap)
-    points['Tier'] = np.ceil(points['LogPoints'] / logt11 * (params['tcap']-1) + 1)   # calculate the current tiers
+    highscore = max(points['Value']) # the current highscore on the board
+    cap = int(params['cap']) # the cap
+    logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
+    interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points
+    points['Tier'] = np.ceil(points['LogPoints'] / interval) + 1 # calculate log points
+    #logcurrentmax = max(points['LogPoints'])                                               # 1. log(high score)
+    #logcap = np.power(int(params['cap']), (int(params['tcap'])-1)/(int(params['tcap'])-2)) # 2. Calculated from cap
+    #logt11 = min(logcurrentmax, logcap)
+    #points['Tier'] = np.ceil(points['LogPoints'] / logt11 * (params['tcap']-1)) + 1   # calculate the current tiers
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value']                                 # pivot the sheet for tiers
     board = points.join(offsets, on = "Participant", how = "outer", rsuffix = ".tier")  # join tiers to point sheet
     if board.index.name is None: board = board.set_index('Participant')
@@ -198,12 +204,17 @@ def act_points_tiers():
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])
-    logcurrentmax = max(points['LogPoints']) 
+    #logcurrentmax = max(points['LogPoints'])
+    highscore = max(points['Value']) # the current highscore on the board
+    cap = int(params['cap']) # the cap
+    logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
+    interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points
     currenttiers = list()
     tierpoints = list()
-    for i in range((int(params['tcap'])-2), -2, -1):
-        currenttiers.append("T" + str(i+2))
-        tierpoints.append(np.around(np.power(np.power(e,logcurrentmax),(i/(params['tcap']-1))),1))  # use meth to determine the T1-10 requirements
+    for i in range((int(params['tcap'])), 0, -1):
+        currenttiers.append("T" + str(i))
+        tierpoints.append(np.ceil(np.power(e, (i - 1) * interval) - 1))
+        #tierpoints.append(np.around(np.power(np.power(e,logcurrentmax),(i/(params['tcap']-1))),1))  # use meth to determine the T1-10 requirements
     tiers = pd.DataFrame({'Tier':currenttiers, 'Value':tierpoints})
     tiers = tiers.set_index('Tier')
     return tiers
@@ -616,9 +627,9 @@ def points_info(message, parsed):
     colour = discord.Colour.teal()
     content1 = command_echo(message)
     content2 = """
-\tWelcome to **Pointinator**, a Discord bot that keeps track of points.
+\tWelcome to **Pointinator**, a Discord bot that keeps track of points. This version """ + ver + """, last updated """ + updated + """.
 \n\t*About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
-\n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`.
+\n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`. For detailed usage, see the guide at <https://havefun.servegame.com/index.php/how-to-pointinate/>.
 \n\t*Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
 \n\t*Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
 """

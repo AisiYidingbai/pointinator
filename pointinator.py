@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1"
+ver = "2.1.1"
 updated = "29-Aug-2023"
 
 # Import packages
@@ -181,11 +181,7 @@ def act_points_show():
     cap = int(params['cap']) # the cap
     logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
     interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points
-    points['Tier'] = np.ceil(points['LogPoints'] / interval) + 1 # calculate log points
-    #logcurrentmax = max(points['LogPoints'])                                               # 1. log(high score)
-    #logcap = np.power(int(params['cap']), (int(params['tcap'])-1)/(int(params['tcap'])-2)) # 2. Calculated from cap
-    #logt11 = min(logcurrentmax, logcap)
-    #points['Tier'] = np.ceil(points['LogPoints'] / logt11 * (params['tcap']-1)) + 1   # calculate the current tiers
+    points['Tier'] = np.floor(points['LogPoints'] / interval) + 1 # calculate log points
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value']                                 # pivot the sheet for tiers
     board = points.join(offsets, on = "Participant", how = "outer", rsuffix = ".tier")  # join tiers to point sheet
     if board.index.name is None: board = board.set_index('Participant')
@@ -214,7 +210,6 @@ def act_points_tiers():
     for i in range((int(params['tcap'])), 0, -1):
         currenttiers.append("T" + str(i))
         tierpoints.append(np.ceil(np.power(e, (i - 1) * interval) - 1))
-        #tierpoints.append(np.around(np.power(np.power(e,logcurrentmax),(i/(params['tcap']-1))),1))  # use meth to determine the T1-10 requirements
     tiers = pd.DataFrame({'Tier':currenttiers, 'Value':tierpoints})
     tiers = tiers.set_index('Tier')
     return tiers

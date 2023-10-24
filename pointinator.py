@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.1"
-updated = "29-Aug-2023"
+ver = "2.1.2"
+updated = "24-Oct-2023"
 
 # Import packages
 import os                         # File I/O
@@ -733,6 +733,10 @@ Point values:
 \t**M guild missions**: 2 points
 \t**L guild missions**: 3 points
 \t**XL guild missions**: 4 points
+\t**Event 3k anymobs (any size)**: 3 points
+\t**Event 5k anymobs (any size)**: 4 points
+\t**Event 7k anymobs (any size)**: 5 points
+\t**Event 10k anymobs (any size)**: 6 points
 \t**Attending guild events**: 2 points
 \t**Depositing a [Guild] Steel Candidum Shell**: 16 points
 \t**Depositing [Guild] Drill materials**: see `drill` commands

@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.2"
+ver = "2.1.3"
 updated = "24-Oct-2023"
 
 # Import packages
@@ -173,7 +173,7 @@ def act_points_reset():
     io_points_save(sheet)
     return
 
-def act_points_show():
+def act_points_show(col):
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])
@@ -189,8 +189,13 @@ def act_points_show():
     board['Value'][np.isnan(board['Value'])] = 0 # set zero points for participants with yes offsets but no points
     board['Tier'][np.isnan(board['Tier'])] = 1 # set 1 tier for participants with yes offsets but no points
     board['Tier'] = np.minimum(np.minimum(board['Tier'], params['tcap']) + board['Value.tier'], params['thardcap']) # don't let the tier exceed the max
-    board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
-    board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers
+    if col == "Tier":
+        board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
+        board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers
+    elif col == "Points":
+        board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
+    elif col == "Participant":
+        board = board.sort_values(['Participant'], ascending = True)
     board['Points'] = board['Value']
     cols = ['Points', 'Tier']
     board = board[cols]
@@ -985,9 +990,26 @@ def points_tiers(message, parsed):
 
 def points_show(message, parsed):
     colour = discord.Colour.teal()
+    operands = len(parsed)
+    if operands > 1:
+        if parsed[1] in ['Participant', 'Points', 'Tier']:
+            col = parsed[1]
+        else:
+            col = "Tier"
+    else:
+        col = "Tier"
     content1 = command_echo(message)
     content2 = "Here's how things stand."
-    content3 = "```" + str(act_points_show()) + "```"
+    content3 = "```" + str(act_points_show(col)) + "```"
+    content = [content1, content2, content3]
+    send = channel_respond(message, colour, content)
+    return send
+
+def points_payout(message, parsed):
+    colour = discord.Colour.teal()
+    content1 = command_echo(message)
+    content2 = "Here's the board in alphabetical order. " + rng(["Thankswali for stonksing us!", "Wali is great.", "Hope this helmps!", "Congratulations to everyone!", "Thanks for another successful board!", "Let's commit tax fraud."])
+    content3 = "```" + str(act_points_show("Participant")) + "```"
     content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
     return send
@@ -1314,6 +1336,7 @@ def points_channel(message, parsed):
     elif(keyword == "n"   or keyword == "new"):    send = points_new(message, parsed)
     elif(keyword == "o"   or keyword == "offset"): send = points_offset(message, parsed)
     elif(keyword == "points"):                     send = points_points(message, parsed)
+    elif(keyword == "payout" or keyword == "p"):   send = points_payout(message, parsed)
     elif(keyword == "q"   or keyword == "queue"):  send = points_queue(message, parsed)
     elif(keyword == "r"   or keyword == "reset"):  send = points_reset(message, parsed)
     elif(keyword == "s"   or keyword == "split"):  send = points_split(message, parsed)

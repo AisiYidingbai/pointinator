@@ -8,8 +8,8 @@ you need the secret key which i'll tell you, specify the keyfile with -k
 
 you need to specify a path where the sheets will live with -o
 
-git pull https://github.com/AisiYidingbai/pointinator.git
+`git clone https://github.com/AisiYidingbai/pointinator.git`
 
-pip install discord.py numpy pandas
+`pip install discord.py numpy pandas`
 
-python pointinator.py -k /path/to/secret/key -o /path/to/files/
+`python pointinator.py -k /path/to/secret/key -o /path/to/files/`

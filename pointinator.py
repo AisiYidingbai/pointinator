@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.3"
-updated = "24-Oct-2023"
+ver = "2.1.4"
+updated = "20-Nov-2023"
 
 # Import packages
 import os                         # File I/O
@@ -173,7 +173,7 @@ def act_points_reset():
     io_points_save(sheet)
     return
 
-def act_points_show(col):
+def act_points_show(col = "Tier"):
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])

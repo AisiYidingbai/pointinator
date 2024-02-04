@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.4"
-updated = "20-Nov-2023"
+ver = "2.1.5"
+updated = "04-Feb-2024"
 
 # Import packages
 import os                         # File I/O
@@ -79,11 +79,11 @@ def interpret(x, y):                                                           #
         for i in y:                                                            # x exists in y
             if(x == i): r = i; break
     if (r is None):
-        for i in y:                                                            # Element in y starts with x
-            if(re.search("^" + x, i, re.IGNORECASE)): r = i; break
-    if (r is None):
         for i in y:                                                            # Element in y ends with x
             if(re.search(x + "$", i, re.IGNORECASE)): r = i; break
+    if (r is None):
+        for i in y:                                                            # Element in y starts with x
+            if(re.search("^" + x, i, re.IGNORECASE)): r = i; break
     if (r is None):
         for i in y:                                                            # Element in y contains x
             if(re.search(x, i, re.IGNORECASE)): r = i; break
@@ -1457,7 +1457,7 @@ file_log = args.workdir + "/discord.log"
 
 passthrough = False                                                             # set this flag when you want commands to be processed silently
 
-roles = ["Vell", "Sailies", "Guildbosses", "Khan", "Leeching", "Atoraxxion", "Othergaming"]
+roles = ["Vell", "Sailies", "Guildbosses", "Khan", "Leeching", "PvP", "Atoraxxion", "Othergaming"]
 
 if(os.path.exists(file_params)):
     params = io_params_load()

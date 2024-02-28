@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.5"
-updated = "04-Feb-2024"
+ver = "2.1.6"
+updated = "28-Feb-2024"
 
 # Import packages
 import os                         # File I/O
@@ -413,13 +413,13 @@ def points_add(message, parsed):
         value = parsed[-1]
         operands = len(parsed)
         if operands < 3:
-            content2 = "Error in `add`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("add")
+            content2 = "Problem with `add`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("add")
             content = [content1, content2]
         elif not re.search("^-*\d+\.*\d*$", value):
-            content2 = "Error in `add`: expected a number for points, got `" + value + "`.\nUsage: " + man("add")
+            content2 = "Problem with `add`: expected a number for points, got `" + value + "`.\nUsage: " + man("add")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE) and interpret(parsed[1], sheet['Participant']) is None:
-            content2 = "Error in `add`: forbidden value passed, `nan`.\nUsage: " + man("add")
+            content2 = "Problem with `add`: forbidden value passed, `nan`.\nUsage: " + man("add")
             content = [content1, content2]
         # Execute
         elif operands == 3:
@@ -466,7 +466,7 @@ def points_delete(message, parsed):
         # Check inputs
         operands = len(parsed)
         if operands < 2:
-            content2 = "Error in `delete`: not enough operands passed.\nUsage: " + man("delete")
+            content2 = "Problem with `delete`: not enough operands passed.\nUsage: " + man("delete")
             content = [content1, content2]
         # Execute
         elif operands == 2:
@@ -479,7 +479,7 @@ def points_delete(message, parsed):
                 content3 = "```" + str(act_points_show()) + "```"
                 content = [content1, content2, content3]
             else:
-                content2 = "Error in `delete`: could not find participant " + parsed[1] + ".\nUsage: " + man("delete")
+                content2 = "Problem with `delete`: could not find participant " + parsed[1] + ".\nUsage: " + man("delete")
                 content = [content1, content2]
         else:
             sheet = io_points_load()
@@ -496,7 +496,7 @@ def points_delete(message, parsed):
                 content3 = "```" + str(act_points_show()) + "```"
                 content = [content1, content2, content3]
             else:
-                content2 = "Error in `delete`: could not find any of those participants.\nUsage: " + man("delete")
+                content2 = "Problem with `delete`: could not find any of those participants.\nUsage: " + man("delete")
                 content = [content1, content2]
         send = channel_respond(message, colour, content)
         return send
@@ -513,22 +513,22 @@ def points_edit(message, parsed):
         # Check inputs
         operands = len(parsed)
         if operands < 4:
-            content2 = "Error in `edit`: not enough operands passed.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: not enough operands passed.\nUsage: " + man("edit")
             content = [content1, content2]
         elif not re.search("^\d+$", parsed[1]):
-            content2 = "Error in `edit`: expected numeric, got `" + str(parsed[1]) + "`.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: expected numeric, got `" + str(parsed[1]) + "`.\nUsage: " + man("edit")
             content = [content1, content2]
         elif int(parsed[1]) > len(io_points_load()):
-            content2 = "Error in `edit`: row number `" + str(parsed[1]) + "` cannot be greater than the number of rows in the sheet.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: row number `" + str(parsed[1]) + "` cannot be greater than the number of rows in the sheet.\nUsage: " + man("edit")
             content = [content1, content2]
         elif parsed[2] not in ['Participant', 'Value', 'Type']:
-            content2 = "Error in `edit`: expected valid column name, got `" + str(parsed[2]) + "`.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: expected valid column name, got `" + str(parsed[2]) + "`.\nUsage: " + man("edit")
             content = [content1, content2]
         elif parsed[2] == "Value" and not re.search("^-*\d+.*\d*$", parsed[3]):
-            content2 = "Error in `edit`: trying to edit a `Value`, expected a numeric, got `" + str(parsed[2]) + "`.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: trying to edit a `Value`, expected a numeric, got `" + str(parsed[2]) + "`.\nUsage: " + man("edit")
             content = [content1, content2]
         elif parsed[2] == "Type" and parsed[3] not in ['point', 'tier']:
-            content2 = "Error in `edit`: trying to edit a `Type`, expected one of `point`, `tier`, got `" + str(parsed[3]) + "`.\nUsage: " + man("edit")
+            content2 = "Problem with `edit`: trying to edit a `Type`, expected one of `point`, `tier`, got `" + str(parsed[3]) + "`.\nUsage: " + man("edit")
             content = [content1, content2]
         # Execute
         else:
@@ -645,10 +645,10 @@ def points_new(message, parsed):
         # Check inputs
         operands = len(parsed)
         if operands < 2:
-            content2 = "Error in `new`: not enough operands passed.\nUsage: " + man("new")
+            content2 = "Problem with `new`: not enough operands passed.\nUsage: " + man("new")
             content = [content1, content2]
         elif ("nan" in parsed[1:operands] or "NaN" in parsed[1:operands]):
-            content2 = "Error in `new`: forbidden value passed: `nan`.\nUsage: " + man("new")
+            content2 = "Problem with `new`: forbidden value passed: `nan`.\nUsage: " + man("new")
             content = [content1, content2]
         # Execute
         sheet = io_points_load()
@@ -687,13 +687,13 @@ def points_offset(message, parsed):
         value = parsed[-1]
         operands = len(parsed)
         if operands < 3:
-            content2 = "Error in `offset`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("offset")
+            content2 = "Problem with `offset`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("offset")
             content = [content1, content2]
         elif not re.search("^-*\d+$", value):
-            content2 = "Error in `offset`: expected a number for tiers, got `" + value + "`.\nUsage: " + man("offset")
+            content2 = "Problem with `offset`: expected a number for tiers, got `" + value + "`.\nUsage: " + man("offset")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE) and interpret(parsed[1], sheet['Participant']) is None:
-            content2 = "Error in `offset`: forbidden value passed, `nan`.\nUsage: " + man("offset")
+            content2 = "Problem with `offset`: forbidden value passed, `nan`.\nUsage: " + man("offset")
             content = [content1, content2]
         # Execute
         elif operands == 3:
@@ -740,9 +740,14 @@ Point values:
 \t**XL guild missions**: 4 points
 \t**Event 3k anymobs (any size)**: 3 points
 \t**Event 5k anymobs (any size)**: 4 points
+\t**Event 6k anymobs (any size)**: 4 points
 \t**Event 7k anymobs (any size)**: 5 points
 \t**Event 10k anymobs (any size)**: 6 points
-\t**Attending guild events**: 2 points
+\t**Event 14k anymobs (any size)**: 7 points
+\t**Event 20k anymobs (any size)**: 8 points
+\t**Attending guildbosses**: 2 points
+\t**Participating in Guild League**: 3 points
+\t**Winning in Guild League**: 4 points
 \t**Depositing a [Guild] Steel Candidum Shell**: 16 points
 \t**Depositing [Guild] Drill materials**: see `drill` commands
 """
@@ -803,13 +808,13 @@ def points_queue(message, parsed):
             content = [content1, content2]
     elif (parsed[1] == "q" or parsed[1] == "queue"):
         if len(parsed) < 4:
-            content2 = "Error in `queue queue`: not enough operands passed.\nUsage: " + man("queue queue")
+            content2 = "Problem with `queue queue`: not enough operands passed.\nUsage: " + man("queue queue")
             content = [content1, content2]
         else:
             requestor = parsed[2]
             request = " ".join(parsed[3:])
             if re.search("^q|^queue", request):
-                content2 = "Error in `queue queue`: `queue` commands not allowed in the queue.\nUsage: " + man("queue queue")
+                content2 = "Problem with `queue queue`: `queue` commands not allowed in the queue.\nUsage: " + man("queue queue")
                 content = [content1, content2]
             else:
                 act_queue_add(requestor, request)
@@ -874,7 +879,7 @@ def points_set(message, parsed):
         # Execute
         operands = len(parsed)
         if operands < 3:
-            content2 = "Error in `set`: too few operands.\nUsage: " + man("set")
+            content2 = "Problem with `set`: too few operands.\nUsage: " + man("set")
             content = [content1, content2]
         else:
             params = io_params_load()
@@ -887,7 +892,7 @@ def points_set(message, parsed):
                 content3 = "```" + str(params) + "```"
                 content = [content1, content2, content3]
             elif not re.search("^-*\d+.*\d*$", newvalue):
-                content2 = "Error in `set`: expected a numeric for `value`, got `" + str(newvalue) + "`.\nUsage: " + man("set")
+                content2 = "Problem with `set`: expected a numeric for `value`, got `" + str(newvalue) + "`.\nUsage: " + man("set")
                 content = [content1, content2]
             else:
                 newvalue = float(newvalue)
@@ -913,13 +918,13 @@ def points_split(message, parsed):
         value = parsed[-1]
         operands = len(parsed)
         if operands < 3:
-            content2 = "Error in `split`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("split")
+            content2 = "Problem with `split`: expected 3 or more operands, got " + str(operands) + ".\nUsage: " + man("split")
             content = [content1, content2]
         elif not re.search("^-*\d+\.*\d*$", value):
-            content2 = "Error in `split`: expected a number for points, got `" + value + "`.\nUsage: " + man("split")
+            content2 = "Problem with `split`: expected a number for points, got `" + value + "`.\nUsage: " + man("split")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE)  and interpret(parsed[1], sheet['Participant']) is None:
-            content2 = "Error in `add`: forbidden value passed, `nan`.\nUsage: " + man("add")
+            content2 = "Problem with `add`: forbidden value passed, `nan`.\nUsage: " + man("add")
             content = [content1, content2]
         # Execute
         elif operands == 3:
@@ -1043,7 +1048,7 @@ def points_undo(message, parsed):
         content1 = command_echo(message)
         # Check state
         if not os.path.exists(bak1_points):
-            content2 = "Error in `undo`: No more undos available."
+            content2 = "Problem with `undo`: No more undos available."
             content = [content1, content2]
         else:
             act_points_undo()
@@ -1097,13 +1102,13 @@ def drill_add(message, parsed):
         value = parsed[3]
         operands = len(parsed)
         if operands < 5:
-            content2 = "Error in `drill add`: expected 5 or more operands, got " + str(operands) + ".\nUsage: " + man("drill add")
+            content2 = "Problem with `drill add`: expected 5 or more operands, got " + str(operands) + ".\nUsage: " + man("drill add")
             content = [content1, content2]
         elif not re.search("^-*\d+$", value):
-            content2 = "Error in `drill add`: expected a number for amount, got `" + value + "`.\nUsage: " + man("drill add")
+            content2 = "Problem with `drill add`: expected a number for amount, got `" + value + "`.\nUsage: " + man("drill add")
             content = [content1, content2]
         elif re.search("^nan$", parsed[1], re.IGNORECASE)  and interpret(parsed[1], drill['Participant']) is None:
-            content2 = "Error in `drill add`: forbidden value passed, `nan`.\nUsage: " + man("drill add")
+            content2 = "Problem with `drill add`: forbidden value passed, `nan`.\nUsage: " + man("drill add")
             content = [content1, content2]
         # Execute
         else:
@@ -1114,7 +1119,7 @@ def drill_add(message, parsed):
             material = interpret(string2, drill['Item'])
             if not participant: participant = string1
             if not material:
-                content2 = "Error in `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
+                content2 = "Problem with `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
             act_drill_add(participant, value, material)
             content2 = rng(["Great"]) + ", added " + str(value) + " " + material + " to " + participant + "."
             content3 = "```" + str(act_drill_summary()) + "```"
@@ -1207,7 +1212,7 @@ def drill_undo(message, parsed):
         content1 = command_echo(message)
         # Check state
         if not os.path.exists(bak1_drill):
-            content2 = "Error in `drill undo`: No more undos available."
+            content2 = "Problem with `drill undo`: No more undos available."
             content = [content1, content2]
         else:
             act_drill_undo()
@@ -1254,7 +1259,7 @@ def queue_add(message, parsed):
     requestor = str(message.author)
     request = str(message.content)
     if re.search("^q|^queue", request):
-        content2 = "Error in `queue`: `queue` commands not allowed in the queue."
+        content2 = "Problem with `queue`: `queue` commands not allowed in the queue."
         content = [content1, content2]
     else:
         act_queue_add(requestor, request)

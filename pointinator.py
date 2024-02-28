@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.11"
+ver = "2.1.12"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -1431,7 +1431,7 @@ async def on_message(message):                                                  
     if(message.content == ""):                                                  # don't respond to system messages
         return
     command = message.content                                                   # get the discord message and interpret it
-    parsed = re.split(" ", command)
+    parsed = re.split("\s+", command)
     if(str(message.channel) == "points"):                                       # don't chat in the wrong channels
         send = points_channel(message, parsed)
         await send

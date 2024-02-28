@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.6"
+ver = "2.1.7"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -173,7 +173,7 @@ def act_points_reset():
     io_points_save(sheet)
     return
 
-def act_points_show(col = "Tier"):
+def act_points_show(col = "Tier", filter = None):
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])
@@ -189,6 +189,8 @@ def act_points_show(col = "Tier"):
     board['Value'][np.isnan(board['Value'])] = 0 # set zero points for participants with yes offsets but no points
     board['Tier'][np.isnan(board['Tier'])] = 1 # set 1 tier for participants with yes offsets but no points
     board['Tier'] = np.minimum(np.minimum(board['Tier'], params['tcap']) + board['Value.tier'], params['thardcap']) # don't let the tier exceed the max
+    if filter is not None:
+        board = board.filter(filter, axis = 0)
     if col == "Tier":
         board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
         board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers
@@ -427,18 +429,21 @@ def points_add(message, parsed):
             value = float(value)
             participant = interpret(string, sheet['Participant'])
             if not participant: participant = string
+            filter = [participant]
             sheet = act_points_add(participant, value, "point", sheet)
             io_points_save(sheet)
             content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", " + str(value) + " points were given to " + participant + "."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
             value = float(value)
+            filter = []
             for s in list(range(1, operands-1)):
                 string = parsed[s]
                 participant = interpret(string, sheet['Participant'])
                 if not participant: participant = string
+                filter = filter + [participant]
                 sheet = act_points_add(participant, value, "point", sheet)
                 if s != operands-2:
                     if operands-2 == 2: participants = participants + participant + " "
@@ -446,7 +451,7 @@ def points_add(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -701,18 +706,21 @@ def points_offset(message, parsed):
             value = float(value)
             participant = interpret(string, sheet['Participant'])
             if not participant: participant = string
+            filter = [participant]
             sheet = act_points_add(participant, value, "tier", sheet)
             io_points_save(sheet)
             content2 = rng(["Gotcha"]) + ", " + str(value) + " tiers were given to " + participant + "."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
             value = float(value)
+            filter = []
             for s in list(range(1, operands-1)):
                 string = parsed[s]
                 participant = interpret(string, sheet['Participant'])
                 if not participant: participant = string
+                filter = filter + [participant]
                 sheet = act_points_add(participant, value, "tier", sheet)
                 if s != operands-2:
                     if operands-2 == 2: participants = participants + participant + " "
@@ -720,7 +728,7 @@ def points_offset(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Nice"]) + ", " + participants + " each got " + str(value) + " tiers."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -932,18 +940,21 @@ def points_split(message, parsed):
             value = float(value)
             participant = interpret(string, sheet['Participant'])
             if not participant: participant = string
+            filter = [participant]
             sheet = act_points_add(participant, value, "point", sheet)
             io_points_save(sheet)
             content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", " + str(value) + " points were given to " + participant + "."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
             value = float(value) / 2
+            filter = []
             for s in list(range(1, operands-1)):
                 string = parsed[s]
                 participant = interpret(string, sheet['Participant'])
                 if not participant: participant = string
+                filter = filter + [participant]
                 sheet = act_points_add(participant, value, "point", sheet)
                 if s != operands-2:
                     if operands-2 == 2: participants = participants + participant + " "
@@ -951,7 +962,7 @@ def points_split(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
-            content3 = "```" + str(act_points_show()) + "```"
+            content3 = "```" + str(act_points_show(filter = filter)) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send

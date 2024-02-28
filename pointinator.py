@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.7"
+ver = "2.1.8"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -281,7 +281,7 @@ def act_drill_show():
     drill = drill.groupby(['Participant', 'Item']).sum(['Silver'])
     return drill
 
-def act_drill_summary():
+def act_drill_summary(filter = None):
     drill = act_drill_show()
     drill = drill.reset_index()
     drill['Points'] = drill['Silver (M)'] / 2
@@ -289,6 +289,8 @@ def act_drill_summary():
     drill['Points'] = np.round(drill['Points'], 1)
     drill = drill.groupby('Participant').sum(['Silver', 'Points'])
     drill = drill.sort_values('Silver (M)', ascending = False)
+    if filter is not None:
+        drill = drill.filter(filter, axis = 0)
     return drill
 
 def act_drill_progress():
@@ -481,8 +483,7 @@ def points_delete(message, parsed):
                 sheet = act_points_delete(participant, sheet)
                 io_points_save(sheet)
                 content2 = rng(["Removing from the board"]) + ", " + participant + "."
-                content3 = "```" + str(act_points_show()) + "```"
-                content = [content1, content2, content3]
+                content = [content1, content2]
             else:
                 content2 = "Problem with `delete`: could not find participant " + parsed[1] + ".\nUsage: " + man("delete")
                 content = [content1, content2]
@@ -498,8 +499,7 @@ def points_delete(message, parsed):
                 io_points_save(sheet)
                 participants = ", ".join(participants)
                 content2 = rng(["Removing from the board"]) + ", " + participants + "."
-                content3 = "```" + str(act_points_show()) + "```"
-                content = [content1, content2, content3]
+                content = [content1, content2]
             else:
                 content2 = "Problem with `delete`: could not find any of those participants.\nUsage: " + man("delete")
                 content = [content1, content2]
@@ -1127,13 +1127,14 @@ def drill_add(message, parsed):
             value = float(value)
             string2 = " ".join(parsed[4:])
             participant = interpret(string1, drill['Participant'])
+            filter = [participant]
             material = interpret(string2, drill['Item'])
             if not participant: participant = string1
             if not material:
                 content2 = "Problem with `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
             act_drill_add(participant, value, material)
             content2 = rng(["Great"]) + ", added " + str(value) + " " + material + " to " + participant + "."
-            content3 = "```" + str(act_drill_summary()) + "```"
+            content3 = "```" + str(act_drill_summary(filter = filter)) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send

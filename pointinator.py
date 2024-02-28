@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.8"
+ver = "2.1.9"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -746,17 +746,17 @@ Point values:
 \t**M guild missions**: 2 points
 \t**L guild missions**: 3 points
 \t**XL guild missions**: 4 points
-\t**Event 3k anymobs (any size)**: 3 points
-\t**Event 5k anymobs (any size)**: 4 points
-\t**Event 6k anymobs (any size)**: 4 points
-\t**Event 7k anymobs (any size)**: 5 points
-\t**Event 10k anymobs (any size)**: 6 points
-\t**Event 14k anymobs (any size)**: 7 points
-\t**Event 20k anymobs (any size)**: 8 points
+\t**Event 3k anymobs (any size)**: 4 points
+\t**Event 5k anymobs (any size)**: 5 points
+\t**Event 6k anymobs (any size)**: 6 points
+\t**Event 7k anymobs (any size)**: 8 points
+\t**Event 10k anymobs (any size)**: 10 points
+\t**Event 14k anymobs (any size)**: 14 points
+\t**Event 20k anymobs (any size)**: 18 points
 \t**Attending guildbosses**: 2 points
 \t**Participating in Guild League**: 3 points
 \t**Winning in Guild League**: 4 points
-\t**Depositing a [Guild] Steel Candidum Shell**: 16 points
+\t**Depositing a [Guild] Steel Candidum Shell**: 10 points
 \t**Depositing [Guild] Drill materials**: see `drill` commands
 """
     content = [content1, content2]

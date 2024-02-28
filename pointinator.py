@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.10"
+ver = "2.1.11"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -949,7 +949,8 @@ def points_split(message, parsed):
             content = [content1, content2, content3]
         else:
             participants = ""
-            value = float(value) / 2
+            divvy = min(operands - 2, 3)
+            value = float(value) / divvy
             filter = []
             for s in list(range(1, operands-1)):
                 string = parsed[s]

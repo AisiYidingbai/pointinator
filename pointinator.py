@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.9"
+ver = "2.1.10"
 updated = "28-Feb-2024"
 
 # Import packages
@@ -178,6 +178,7 @@ def act_points_show(col = "Tier", filter = None):
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     points['LogPoints'] = np.log(1 + points['Value'])
     highscore = max(points['Value']) # the current highscore on the board
+    params = io_params_load()
     cap = int(params['cap']) # the cap
     logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
     interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points

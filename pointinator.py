@@ -125,7 +125,8 @@ def command_echo(x):
 #%% Curve shapes
 def logarithmic(x): # use log shape to calculate tier from points
     params = io_params_load()
-    points = io_points_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     highscore = max(points['Value']) 
     tcap = params['tcap'] # apex of curve
     cap = np.minimum(highscore, params['cap']+1) # curve anchor
@@ -138,7 +139,8 @@ def logarithmic(x): # use log shape to calculate tier from points
 
 def logarithmic_inverse(y): # use log shape to calculate points from tier
     params = io_params_load()
-    points = io_points_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     highscore = max(points['Value']) 
     tcap = params['tcap'] # apex of curve
     cap = np.minimum(highscore, params['cap']+1) # curve anchor
@@ -150,7 +152,8 @@ def logarithmic_inverse(y): # use log shape to calculate points from tier
 
 def logistic(x): # use logistic shape to calculate tier from points
     params = io_params_load()
-    points = io_points_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     shape = -params['difficulty']
     highscore = max(points['Value']) 
     tcap = params['tcap'] # apex of curve
@@ -165,7 +168,8 @@ def logistic(x): # use logistic shape to calculate tier from points
 
 def logistic_inverse(y): # use logistic shape to calculate points from tier
     params = io_params_load()
-    points = io_points_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     shape = -params['difficulty']
     highscore = max(points['Value']) 
     tcap = params['tcap'] # apex of curve

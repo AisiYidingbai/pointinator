@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.1.13"
-updated = "28-Feb-2024"
+ver = "2.2"
+updated = "12-Apr-2024"
 
 # Import packages
 import os                         # File I/O
@@ -35,11 +35,6 @@ def io_queue_load():
     x = x[['Requestor', 'Request', 'Time']]
     return x
 
-def io_drill_load():
-    x = pd.read_csv(file_drill)
-    x = x[['Participant', 'Item', 'Amount', 'Date']]
-    return x
-
 def io_params_load():
     with open(file_params) as f:
         x = json.load(f)
@@ -58,13 +53,6 @@ def io_queue_save(x):
     if(os.path.exists(bak1_queue)): os.rename(bak1_queue, bak2_queue)
     if(os.path.exists(file_queue)): os.rename(file_queue, bak1_queue)
     x.to_csv(file_queue)                                                       # Write to file
-    
-def io_drill_save(x):
-    if(os.path.exists(bak3_drill)): os.remove(bak3_drill)                      # Rotate existing backups
-    if(os.path.exists(bak2_drill)): os.rename(bak2_drill, bak3_drill)
-    if(os.path.exists(bak1_drill)): os.rename(bak1_drill, bak2_drill)
-    if(os.path.exists(file_drill)): os.rename(file_drill, bak1_drill)
-    x.to_csv(file_drill)                                                       # Write to file
     
 def io_params_save(x):
     with open(file_params, 'w') as f:
@@ -118,15 +106,6 @@ def man(x):
     if (x == "undo"):             r = "`z`: **Undo** the last change."
     if (x == "whois"):            r = "`whois <nickname>`: See if I can convert a *nickname* to a participant already on the board."
     
-    if (x == "drill add"):        r = "`dr a <p> <n> <mat>`: **Add** *n* drill *mat*erials for participant *p*."
-    if (x == "drill show"):       r = "`dr show`: **Show** a comprehensive report of drill materials."
-    if (x == "drill summary"):    r = "`dr summary`: Show a **summary** of drill materials."
-    if (x == "drill progress"):   r = "`dr progress`: Show a summary of drill **progress**."
-    if (x == "drill undo"):       r = "`dr z`: **Undo** the last change to the drill sheet."
-    if (x == "drill tail"):       r = "`dr tail <n>`: **Tail** the last *n* actions of the drill sheet."
-    if (x == "drill reset"):      r = "`dr r`: **Reset** the drill sheet."
-    if (x == "drill edit"):       r = "`dr edit <row> <column> <value>`: **Edit** the drill sheet at *row* and *column* to *value*. *column* must be one of `Item`, `Participant`, or `Amount`."
-    
     if (x == "queue"):            r = "`q`: Show the **queue**."
     if (x == "queue approve"):    r = "`q a`: **Approve** the request at the top of the queue."
     if (x == "queue deny"):       r = "`q d`: **Deny** the request at the top of the queue."
@@ -141,6 +120,67 @@ def rng(x):
 def command_echo(x):
     r = "*Your command:  *`" + re.sub("[*`]", "", x.content) + "`" + "\n"
     return r
+
+
+#%% Curve shapes
+def logarithmic(x): # use log shape to calculate tier from points
+    params = io_params_load()
+    points = io_points_load()
+    highscore = max(points['Value']) 
+    tcap = params['tcap'] # apex of curve
+    cap = np.minimum(highscore, params['cap']+1) # curve anchor
+    k = (tcap-1)/np.log(cap)
+    x = x + 1 # add pseudocount
+    y = k * np.log(x)
+    y = np.floor(y+1) # to integer, round up
+    y = np.minimum(y, tcap) # not exceed tcap
+    return y
+
+def logarithmic_inverse(y): # use log shape to calculate points from tier
+    params = io_params_load()
+    points = io_points_load()
+    highscore = max(points['Value']) 
+    tcap = params['tcap'] # apex of curve
+    cap = np.minimum(highscore, params['cap']+1) # curve anchor
+    k = (tcap-1)/np.log(cap)
+    y = y - 1 # find bottom of tier
+    x = np.power(e, y/k)
+    x = np.ceil(x-1) # to integer, remove pseudocount
+    return x
+
+def logistic(x): # use logistic shape to calculate tier from points
+    params = io_params_load()
+    points = io_points_load()
+    shape = -params['difficulty']
+    highscore = max(points['Value']) 
+    tcap = params['tcap'] # apex of curve
+    cap = np.minimum(highscore, params['cap'])+1 # curve anchor
+    x0 = (cap+1 - shape) / 2
+    k = np.log(tcap)/(x0 + shape)
+    x = x-1
+    y = tcap / (1 + np.power(np.e, -k * (x - x0)))
+    y = np.floor(y+1) # to integer, round up
+    y = np.minimum(y, tcap) # not exceed tcap
+    return y
+
+def logistic_inverse(y): # use logistic shape to calculate points from tier
+    params = io_params_load()
+    points = io_points_load()
+    shape = -params['difficulty']
+    highscore = max(points['Value']) 
+    tcap = params['tcap'] # apex of curve
+    cap = np.minimum(highscore, params['cap'])+1 # curve anchor
+    x0 = (cap+1 - shape) / 2
+    k = np.log(tcap)/(x0 + shape)
+    y = y - 1 # find bottom of tier
+    if y == 0: # deal at lower asymptote
+        x = 0
+    else:
+        x = x0 - (np.log(tcap / y - 1) / k)
+        x = np.ceil(x+1) # to integer, add pseudocount
+        x = np.maximum(x, 0)
+    return x
+
 
 #%% Actions: points
 def act_points_add(participant, value, kind, sheet):
@@ -175,16 +215,19 @@ def act_points_reset():
 
 def act_points_show(col = "Tier", filter = None):
     sheet = io_points_load()
-    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
-    points['LogPoints'] = np.log(1 + points['Value'])
-    highscore = max(points['Value']) # the current highscore on the board
     params = io_params_load()
-    cap = int(params['cap']) # the cap
-    logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
-    interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points
-    points['Tier'] = np.floor(points['LogPoints'] / interval) + 1 # calculate log points
-    offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value']                                 # pivot the sheet for tiers
+    # Tiers awarded by points
+    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
+    method = params['method']
+    if method == 1:
+        points['Tier'] = logarithmic(points['Value'])
+    elif method == 2:
+        points['Tier'] = logistic(points['Value'])
+    # Tiers awarded by offsets
+    offsets = sheet.loc[sheet['Type'] == 'tier'].groupby('Participant').sum('Value')['Value'] # pivot the sheet for tiers
+    # Combined board
     board = points.join(offsets, on = "Participant", how = "outer", rsuffix = ".tier")  # join tiers to point sheet
+    # Edge cases
     if board.index.name is None: board = board.set_index('Participant')
     board['Value.tier'][np.isnan(board['Value.tier'])] = 0 # set zero tiers for participants with no offsets
     board['Value'][np.isnan(board['Value'])] = 0 # set zero points for participants with yes offsets but no points
@@ -205,19 +248,16 @@ def act_points_show(col = "Tier", filter = None):
     return board
 
 def act_points_tiers():
-    sheet = io_points_load()
-    points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
-    points['LogPoints'] = np.log(1 + points['Value'])
-    #logcurrentmax = max(points['LogPoints'])
-    highscore = max(points['Value']) # the current highscore on the board
-    cap = int(params['cap']) # the cap
-    logt11 = min(np.log(highscore + 1), np.log(cap + 1) * 10/9) # select a logT11 to use for tier calculation based on the highscore and cap
-    interval = logt11 / int(params['tcap']) # calculate the interval between tiers measured in log points
     currenttiers = list()
     tierpoints = list()
+    params = io_params_load()
+    method = params['method']
     for i in range((int(params['tcap'])), 0, -1):
         currenttiers.append("T" + str(i))
-        tierpoints.append(np.ceil(np.power(e, (i - 1) * interval) - 1))
+        if method == 1:
+            tierpoints.append(logarithmic_inverse(i))
+        elif method == 2:
+            tierpoints.append(logistic_inverse(i))
     tiers = pd.DataFrame({'Tier':currenttiers, 'Value':tierpoints})
     tiers = tiers.set_index('Tier')
     return tiers
@@ -229,107 +269,6 @@ def act_points_undo():
         os.rename(bak2_points, bak1_points)                                               # reinstate backup 2 as backup 1 if it exists
         if(os.path.exists(bak3_points)):
                 os.rename(bak3_points, bak2_points)                                       # reinstate backup 3 as backup 2 if it exists
-    return
-
-#%% Actions: drill
-def act_drill_add(participant, amount, material):
-    drill = io_drill_load()
-    drill = drill.loc[drill['Participant'] != "No-one yet"]      # delete the initialising entry for new sheets if it is there
-    date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")                         # get the current date and time
-    drill = pd.concat([drill, pd.DataFrame({'Participant':[participant], 'Amount':[amount], 'Item':[material], 'Date':[date]})]) # add an entry to the sheet
-    io_drill_save(drill)
-    return
-
-def act_drill_reset():
-    date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    drill = {'Participant':["dummy"] * 16,
-                                    'Item':['Old Tree\'s Tear',
-                                            'Elder Tree Plywood',
-                                            'Palm Plywood',
-                                            'Standardized Timber Square',
-                                            'Black Stone Powder',
-                                            'Earth\'s Tear',
-                                            'Steel',
-                                            'Vanadium Ingot',
-                                            'Log',
-                                            'Bronze Ingot',
-                                            'Titanium Ingot',
-                                            'Black Stone (Weapon)',
-                                            'Black Stone (Armor)',
-                                            'Powder of Flame',
-                                            'Fire Horn',
-                                            'Coal'],
-                                    'Amount':[0] * 16,
-                                    'Date':[date] * 16}
-    drill = pd.DataFrame(drill)
-    drill = pd.concat([drill, pd.DataFrame({'Participant':["No-one yet"], 'Item':["Nothing"], 'Amount':[0], 'Date':[date]})])
-    io_drill_save(drill)
-    return
-
-def act_drill_show():
-    drill = io_drill_load()
-    params = io_params_load()
-    drill = drill.loc[drill['Participant'] != "dummy"]           # data has dummy rows with all mats but zero amount and assigned to no-one. remove
-    drill = drill.groupby(['Participant', 'Item']).sum('Amount')      # group by participant and item, show a sum of the amount
-    drill = drill.reset_index()
-    silver = []                                                                 # calculate silver
-    for i in range(len(drill)):
-        item = drill.iloc[i,1]
-        amount = drill.iloc[i,2]
-        silver.append(amount * params[item] / 1000000)                          # using the parameters file, and then calculate millions of silver
-    drill['Silver (M)'] = silver
-    drill['Silver (M)'] = np.round(drill['Silver (M)'], 1)            # round to 1 d.p.
-    drill = drill.groupby(['Participant', 'Item']).sum(['Silver'])
-    return drill
-
-def act_drill_summary(filter = None):
-    drill = act_drill_show()
-    drill = drill.reset_index()
-    drill['Points'] = drill['Silver (M)'] / 2
-    drill['Points'] = drill['Silver (M)'] / 2
-    drill['Points'] = np.round(drill['Points'], 1)
-    drill = drill.groupby('Participant').sum(['Silver', 'Points'])
-    drill = drill.sort_values('Silver (M)', ascending = False)
-    if filter is not None:
-        drill = drill.filter(filter, axis = 0)
-    return drill
-
-def act_drill_progress():
-    drill = act_drill_show()
-    drill = drill.groupby(['Item']).sum('Amount')                  # group by item only, show a sum of the total amount contributed so far
-    drill = drill.reset_index()
-    drill_totals = [                                                            # make an array of mats and requirements
-        ['(multiple)','Old Tree\'s Tear',200],
-        ['Support','Elder Tree Plywood',100],
-        ['Support','Palm Plywood',100],
-        ['Support','Standardized Timber Square',100],
-        ['(multiple)','Black Stone Powder',4000],
-        ['(multiple)','Earth\'s Tear',200],
-        ['(multiple)','Steel',200],
-        ['Shaft','Vanadium Ingot',100],
-        ['Grip','Log',100],
-        ['Grip','Bronze Ingot',100],
-        ['Pin','Titanium Ingot',100],
-        ['Fuel','Black Stone (Weapon)',5000],
-        ['Fuel','Black Stone (Armor)',5000],
-        ['Fuel','Powder of Flame',5000],
-        ['Fuel','Fire Horn',5000],
-        ['Fuel','Coal',5000]
-        ]
-    drill_totals = pd.DataFrame(drill_totals, columns = ['Part', 'Item', 'Required'])
-    drill = drill.merge(drill_totals, on = "Item", how = "outer")# merge arrays
-    drill = drill.sort_values("Part")
-    drill['Amount'] = drill['Amount'].fillna(0)
-    drill = drill.set_index(['Part','Item'])
-    return drill
-
-def act_drill_undo():
-    os.remove(file_drill)                                                         # delete the current sheet
-    os.rename(bak1_drill, file_drill)                                                   # reinstate backup 1 as the current sheet
-    if(os.path.exists(bak2_drill)):
-        os.rename(bak2_drill, bak1_drill)                                               # reinstate backup 2 as backup 1 if it exists
-        if(os.path.exists(bak3_drill)):
-                os.rename(bak3_drill, bak2_drill)                                       # reinstate backup 3 as backup 2 if it exists
     return
 
 #%% Actions: queue
@@ -607,16 +546,6 @@ def points_man(message, parsed):
     content2 = content2 + "\n\t" + man("info")
     content2 = content2 + "\n\t" + man("chat")
     
-    content2 = content2 + "\n\nDrill commands:"
-    content2 = content2 + "\n\t" + man("drill add")
-    content2 = content2 + "\n\t" + man("drill show")
-    content2 = content2 + "\n\t" + man("drill summary")
-    content2 = content2 + "\n\t" + man("drill progress")
-    content2 = content2 + "\n\t" + man("drill undo")
-    content2 = content2 + "\n\t" + man("drill tail")
-    content2 = content2 + "\n\t" + man("drill reset")
-    content2 = content2 + "\n\t" + man("drill edit")
-    
     content2 = content2 + "\n\nQueue commands:"
     content2 = content2 + "\n\t" + man("queue")
     content2 = content2 + "\n\t" + man("queue approve")
@@ -758,7 +687,6 @@ Point values:
 \t**Participating in Guild League**: 3 points
 \t**Winning in Guild League**: 4 points
 \t**Depositing a [Guild] Steel Candidum Shell**: 10 points
-\t**Depositing [Guild] Drill materials**: see `drill` commands
 """
     content = [content1, content2]
     send = channel_respond(message, colour, content)
@@ -1096,175 +1024,13 @@ def points_syntax(message, parsed):
     content1 = command_echo(message)
     content2 = """
         Possible Pointinator commands:
-        `add`, `split`, `offset`, `new`, `show`, `delete`, `undo`, `queue`, `reset`, `tail`, `tiers`, `whois`, `set`, `edit`, `points`, `help`, `info`, `chat`, `drill`.\n
+        `add`, `split`, `offset`, `new`, `show`, `delete`, `undo`, `queue`, `reset`, `tail`, `tiers`, `whois`, `set`, `edit`, `points`, `help`, `info`, `chat`.\n
         Issue `help` for detailed usage instructions.
         """
     content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send
 
-
-#%% Drill functions
-def drill_add(message, parsed):
-    # If officer
-    if is_officer(message):
-        colour = discord.Colour.gold()
-        content1 = command_echo(message)
-        # Check inputs
-        drill = io_drill_load()
-        value = parsed[3]
-        operands = len(parsed)
-        if operands < 5:
-            content2 = "Problem with `drill add`: expected 5 or more operands, got " + str(operands) + ".\nUsage: " + man("drill add")
-            content = [content1, content2]
-        elif not re.search("^-*\d+$", value):
-            content2 = "Problem with `drill add`: expected a number for amount, got `" + value + "`.\nUsage: " + man("drill add")
-            content = [content1, content2]
-        elif re.search("^nan$", parsed[1], re.IGNORECASE)  and interpret(parsed[1], drill['Participant']) is None:
-            content2 = "Problem with `drill add`: forbidden value passed, `nan`.\nUsage: " + man("drill add")
-            content = [content1, content2]
-        # Execute
-        else:
-            string1 = parsed[2]
-            value = float(value)
-            string2 = " ".join(parsed[4:])
-            participant = interpret(string1, drill['Participant'])
-            filter = [participant]
-            material = interpret(string2, drill['Item'])
-            if not participant: participant = string1
-            if not material:
-                content2 = "Problem with `drill add`: material not found, ", string2, ".\nUsage: " + man("drill add")
-            act_drill_add(participant, value, material)
-            content2 = rng(["Great"]) + ", added " + str(value) + " " + material + " to " + participant + "."
-            content3 = "```" + str(act_drill_summary(filter = filter)) + "```"
-            content = [content1, content2, content3]
-        send = channel_respond(message, colour, content)
-        return send
-    # If not officer
-    else:
-        send = queue_add(message, parsed)
-        return send
-    return
-
-def drill_progress(message, parsed):
-    colour = discord.Colour.gold()
-    progress = act_drill_progress()
-    content1 = command_echo(message)
-    content2 = "Here's the current drill progress."
-    content3 = "```" + str(progress) + "```"
-    content = [content1, content2, content3]
-    send = channel_respond(message, colour, content)
-    return send
-
-def drill_reset(message, parsed):
-    if is_officer(message):
-        colour = discord.Colour.gold()
-        content1 = command_echo(message)
-        operands = len(parsed)
-        if operands == 2:
-            content2 = "Are you sure? This will wipe the drill sheet. Type `drill reset confirm` to confirm you want to do this."
-            content = [content1, content2]
-        elif parsed[2] == "confirm":
-            act_drill_reset()
-            content2 = "Wiped the drill sheet."
-            content = [content1, content2]
-        else:
-            content2 = "Are you sure? This will wipe the drill sheet. Type `drill reset confirm` to confirm you want to do this."
-            content = [content1, content2]
-        send = channel_respond(message, colour, content)
-        return send
-    else:
-        send = queue_add(message, parsed)
-        return send
-
-def drill_show(message, parsed):
-    colour = discord.Colour.gold()
-    drill = act_drill_show()
-    content1 = command_echo(message)
-    content2 = "Here's the drill sheet."
-    content3 = "```" + str(drill) + "```"
-    content = [content1, content2, content3]
-    send = channel_respond(message, colour, content)
-    return send
-
-def drill_summary(message, parsed):
-    colour = discord.Colour.gold()
-    content1 = command_echo(message)
-    content2 = "Here's the current drill report."
-    content3 = "```" + str(act_drill_summary()) + "```"
-    content = [content1, content2, content3]
-    send = channel_respond(message, colour, content)
-    return send
-
-def drill_tail(message, parsed):
-    colour = discord.Colour.gold()
-    content1 = command_echo(message)
-    # Check inputs
-    operands = len(parsed)
-    if operands < 2:
-        lines = 6
-    elif re.search("^\d+$", parsed[2]):
-        lines = int(parsed[2])
-    else:
-        lines = 6
-    # Execute
-    lines = min(10, lines)
-    drill = io_drill_load()
-    sli = drill.iloc[-int(lines):]
-    cols = ['Participant', 'Item', 'Amount', 'Date']
-    sli = sli[cols]
-    content2 = "Here are the last " + str(lines) + " lines of the drill sheet."
-    content3 = "```" + str(sli) + "```"
-    content = [content1, content2, content3]
-    send = channel_respond(message, colour, content)
-    return send
-
-def drill_undo(message, parsed):
-    # If officer
-    if is_officer(message):
-        colour = discord.Colour.gold()
-        content1 = command_echo(message)
-        # Check state
-        if not os.path.exists(bak1_drill):
-            content2 = "Problem with `drill undo`: No more undos available."
-            content = [content1, content2]
-        else:
-            act_drill_undo()
-            drill = io_drill_load()
-            lastmodified = max(drill['Date'])
-            content2 = "Rolling back to the drill sheet as of " + str(lastmodified)
-            content3 = "```" + str(act_drill_summary()) + "```"
-            content = [content1, content2, content3]
-        send = channel_respond(message, colour, content)
-        return send
-    # If not officer
-    else:
-        colour = discord.Colour.greyple()
-        content1 = command_echo(message)
-        act_queue_undo()
-        queue = io_queue_load()
-        if len(queue) > 0:
-            lastmodified = max(queue['Date'])
-            content2 = "Rolling back to queue as of " + str(lastmodified)
-            content3 = "```" + str(queue) + "```"
-            content = [content1, content2, content3]
-        else:
-            content2 = "Undid the last queue entry. It's empty now."
-            content = [content1, content2]
-        send = channel_respond(message, colour, content)
-        return send
-    
-def drill_syntax(message, parsed):
-    colour = discord.Colour.gold()
-    content1 = command_echo(message)
-    content2 = """
-        Possible Pointinator drill commands:
-        `drill add`, `drill show`, `drill progress`, `drill summary`, `drill tail`, `drill undo`, `drill reset`.\n
-        Issue `help` for detailed usage instructions.
-        """
-    content = [content1, content2]
-    send = channel_respond(message, colour, content)
-    return send
 
 #%% Queue function
 def queue_add(message, parsed):
@@ -1347,7 +1113,6 @@ def points_channel(message, parsed):
     if(keyword == "a"   or keyword == "add"):      send = points_add(message, parsed)
     elif(keyword == "c"   or keyword == "chat"):   send = points_chat(message, parsed)
     elif(keyword == "del" or keyword == "delete"): send = points_delete(message, parsed)
-    elif(keyword == "dr"  or keyword == "drill"):  send = points_drill(message, parsed)
     elif(keyword == "edit"):                       send = points_edit(message, parsed)
     elif(keyword == "get"):                        send = points_get(message, parsed)
     elif(keyword == "help"):                       send = points_man(message, parsed)
@@ -1366,21 +1131,6 @@ def points_channel(message, parsed):
     elif(keyword == "whois"):                      send = points_whois(message, parsed)
     elif(keyword == "z"   or keyword == "undo"):   send = points_undo(message, parsed)
     else:                                          send = points_syntax(message, parsed)
-    return send
-
-#%% drill function selector
-def points_drill(message, parsed):
-    if len(parsed) > 1:
-        keyword = parsed[1].lower()
-        if(keyword == "a"   or keyword == "add"):      send = drill_add(message, parsed)
-        elif(keyword == "progress"):                   send = drill_progress(message, parsed)
-        elif(keyword == "r"   or keyword == "reset"):  send = drill_reset(message, parsed)
-        elif(keyword == "sh"  or keyword == "show"):   send = drill_show(message, parsed)
-        elif(keyword == "summary"):                    send = drill_summary(message, parsed)
-        elif(keyword == "t"   or keyword == "tail"):   send = drill_tail(message, parsed)
-        elif(keyword == "z"   or keyword == "undo"):   send = drill_undo(message, parsed)
-        else:                                          send = drill_syntax(message, parsed)
-    else:                                              send = drill_syntax(message, parsed)
     return send
 
 #%% #roles channel function selector
@@ -1463,10 +1213,6 @@ file_points = args.workdir + "/pointinator.txt"
 bak1_points = args.workdir + "/pointinator.bak1.txt"
 bak2_points = args.workdir + "/pointinator.bak2.txt"
 bak3_points = args.workdir + "/pointinator.bak3.txt"
-file_drill = args.workdir + "/drill.txt"
-bak1_drill = args.workdir + "/drill.bak1.txt"
-bak2_drill = args.workdir + "/drill.bak2.txt"
-bak3_drill = args.workdir + "/drill.bak3.txt"
 file_queue = args.workdir + "/queue.txt"
 bak1_queue = args.workdir + "/queue.bak1.txt"
 bak2_queue = args.workdir + "/queue.bak2.txt"
@@ -1485,22 +1231,8 @@ else:
         'cap':150,                                                              # number of points to guarantee a max tier payout
         'tcap':10,                                                              # maximum tier attainable by scoring points only
         'thardcap':10,                                                          # maximum tier attainable after accounting for offsets
-        'Old Tree\'s Tear':0,
-        'Elder Tree Plywood':0,
-        'Palm Plywood':0,
-        'Standardized Timber Square':0,
-        'Black Stone Powder':0,
-        'Earth\'s Tear':0,
-        'Steel':0,
-        'Vanadium Ingot':0,
-        'Log':0,
-        'Bronze Ingot':0,
-        'Titanium Ingot':0,
-        'Black Stone (Weapon)':0,
-        'Black Stone (Armor)':0,
-        'Powder of Flame':0,
-        'Fire Horn':0,
-        'Coal':0
+        'method':1,                                                             # 1: "logarithmic" or 2: "logistic"
+        'difficulty':0,                                                         # shape of the logistic curve, bigger values mean steeper
         }
     io_params_save(params)
 
@@ -1518,9 +1250,6 @@ else:
 
 if(not os.path.exists(file_points)):                                                   # make a new sheet if it doesn't exist
     points_reset()
-
-if(not os.path.exists(file_drill)):                                             # make a new drill sheet if it doesn't exist
-    drill_reset()
 
 # logging
 handler = logging.FileHandler(filename=file_log, encoding='utf-8', mode='w')

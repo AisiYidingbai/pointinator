@@ -129,7 +129,7 @@ def logarithmic(x): # use log shape to calculate tier from points
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap'] # apex of curve
-    cap = np.minimum(highscore, params['cap']+1) # curve anchor
+    cap = np.minimum(highscore, params['cap'])+1 # curve anchor
     k = (tcap-1)/np.log(cap)
     x = x + 1 # add pseudocount
     y = k * np.log(x)
@@ -143,7 +143,7 @@ def logarithmic_inverse(y): # use log shape to calculate points from tier
     points = sheet.loc[sheet['Type'] == 'point'].groupby('Participant').sum('Value')
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap'] # apex of curve
-    cap = np.minimum(highscore, params['cap']+1) # curve anchor
+    cap = np.minimum(highscore, params['cap'])+1 # curve anchor
     k = (tcap-1)/np.log(cap)
     y = y - 1 # find bottom of tier
     x = np.power(e, y/k)

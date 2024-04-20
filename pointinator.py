@@ -1197,7 +1197,6 @@ async def on_message(message):                                                  
 #%% Execution
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-k", "--keyfile", help = "Path to Discord bot secret key.")
 parser.add_argument("-o", "--workdir", help = "Path to working directory.")
 args = parser.parse_args()
 

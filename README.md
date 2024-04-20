@@ -12,4 +12,4 @@ you need to specify a path where the sheets will live with -o
 
 `pip install discord.py numpy pandas`
 
-`python pointinator.py -k /path/to/secret/key -o /path/to/files/`
+`python pointinator.py -o /path/to/files/`

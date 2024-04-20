@@ -10,6 +10,8 @@ you need to specify a path where the sheets will live with -o
 
 `git clone https://github.com/AisiYidingbai/pointinator.git`
 
-`pip install discord.py numpy pandas`
+`pip install -r requirements.txt`
+
+(to update requirements.txt use pipreqs (pip install pipreqs) inside project folder)
 
 `python pointinator.py -o /path/to/files/`

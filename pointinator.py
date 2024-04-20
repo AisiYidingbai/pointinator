@@ -1253,7 +1253,7 @@ else:
 
 
 if(not os.path.exists(file_points)):                                                   # make a new sheet if it doesn't exist
-    points_reset()
+    act_points_reset()
 
 # logging
 handler = logging.FileHandler(filename=file_log, encoding='utf-8', mode='w')

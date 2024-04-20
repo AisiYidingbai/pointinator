@@ -22,6 +22,7 @@ import pandas as pd               # Dataframes
 from datetime import datetime     # Date and time
 import argparse                   # Commandline interface
 import discord                    # Discord
+import secret                     # Discord key/token
 import __main__ as main
 
 #%% Common I/O functions
@@ -1259,7 +1260,6 @@ if(not os.path.exists(file_points)):                                            
 handler = logging.FileHandler(filename=file_log, encoding='utf-8', mode='w')
 
 # run bot
-key = open(args.keyfile, mode='r', encoding='utf-8').read()
-client.run(key, reconnect=True, log_handler=handler)
+client.run(secret.key, reconnect=True, log_handler=handler)
 
 # 

@@ -1197,7 +1197,6 @@ async def on_message(message):                                                  
 #%% Execution
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-k", "--keyfile", help = "Path to Discord bot secret key.")
 parser.add_argument("-o", "--workdir", help = "Path to working directory.")
 args = parser.parse_args()
 
@@ -1254,7 +1253,7 @@ else:
 
 
 if(not os.path.exists(file_points)):                                                   # make a new sheet if it doesn't exist
-    points_reset()
+    act_points_reset()
 
 # logging
 handler = logging.FileHandler(filename=file_log, encoding='utf-8', mode='w')

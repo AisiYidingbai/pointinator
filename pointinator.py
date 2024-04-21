@@ -241,12 +241,12 @@ def act_points_show(col = "Tier", filter = None):
     if filter is not None:
         board = board.filter(filter, axis = 0)
     if col == "Tier":
-        board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
-        board = board.sort_values(['Tier'], ascending = False)               # sort the sheet by descending tiers
+        board = board.sort_values('Value', ascending = False)             # sort the sheet by descending points
+        board = board.sort_values('Tier', ascending = False)               # sort the sheet by descending tiers
     elif col == "Points":
-        board = board.sort_values(['Value'], ascending = False)             # sort the sheet by descending points
+        board = board.sort_values('Value', ascending = False)             # sort the sheet by descending points
     elif col == "Participant":
-        board = board.sort_values(['Participant'], ascending = True)
+        board = board.sort_values('Participant', ascending = True)
     board['Points'] = board['Value']
     cols = ['Points', 'Tier']
     board = board[cols]

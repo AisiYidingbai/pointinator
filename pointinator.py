@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.2"
-updated = "12-Apr-2024"
+ver = "2.3"
+updated = "21-Apr-2024"
 
 # Import packages
 import os                         # File I/O
@@ -241,8 +241,7 @@ def act_points_show(col = "Tier", filter = None):
     if filter is not None:
         board = board.filter(filter, axis = 0)
     if col == "Tier":
-        board = board.sort_values('Value', ascending = False)             # sort the sheet by descending points
-        board = board.sort_values('Tier', ascending = False)               # sort the sheet by descending tiers
+        board = board.sort_values(['Tier', 'Value'], ascending = [False, False])             # sort the sheet by descending tiers and points
     elif col == "Points":
         board = board.sort_values('Value', ascending = False)             # sort the sheet by descending points
     elif col == "Participant":

@@ -1022,6 +1022,12 @@ def points_undo(message, parsed):
                 content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send
+
+def points_uwu(message, parsed):
+    colour = discord.Colour.pink()
+    content = get_uwu_art()
+    send = channel_respond(message, colour, content)
+    return send
     
 def points_syntax(message, parsed):
     colour = discord.Colour.teal()
@@ -1111,6 +1117,17 @@ def roles_syntax(message, parsed):
     sends = sends + send
     return sends
 
+#%% #super important uwu generator
+def get_uwu_art():
+    return """
+         _    _     _    _     _    _ 
+        | |  | |   | |  | |   | |  | | 
+        | |  | |   | |  | |   | |  | | 
+        | |  | |   | |/\| |   | |  | | 
+        | |  | |   | /  \ |   | |__| | 
+         \____/    |_|  |_|    \____/  
+        """
+
 #%% #points channel function selector
 def points_channel(message, parsed):
     keyword = parsed[0].lower()
@@ -1134,6 +1151,7 @@ def points_channel(message, parsed):
     elif(keyword == "sh"  or keyword == "show"):   send = points_show(message, parsed)
     elif(keyword == "whois"):                      send = points_whois(message, parsed)
     elif(keyword == "z"   or keyword == "undo"):   send = points_undo(message, parsed)
+    elif(keyword == "uwu"):                        send = points_uwu(message, parsed)
     else:                                          send = points_syntax(message, parsed)
     return send
 

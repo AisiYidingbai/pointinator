@@ -6,15 +6,16 @@ so basically you `git clone https://github.com/AisiYidingbai/pointinator.git` th
 
 (to update requirements.txt use pipreqs (`pip install pipreqs`) inside project folder)
 
-copy-paste the secret key into `secret.py`, bai'll tell you my secrets if you ask nicely
+`cd pointinator` and then copy-paste the secret key into `secret.py`, bai'll tell you my secrets if you ask nicely
+
+to stop `secret.py` from updating when you update the repo with `git pull origin`, add it to your `gitignore`: `echo secret.py >> gitignore`
 
 the syntax is `python pointinator.py -o /path/to/files/` and you'll see the dev instance go up in the discord test server automatically
 
 you need to specify a path where the sheets will live with `-o`, if the sheets aren't there already then pointinator will make them
 
 # instructions if you're not helm
-
-same as above but you need to create a bot user, invite it to your server, and generate a secret key for it so that it can log in
+same as above but you need to also create a bot user, invite it to your server, and generate a secret key for it so that it can log in
 
 * go to discord developer portal https://discord.com/developers/applications/ and log in with a user that has manage server permissions in the server you want to use pointinator in
 * in applications, create a new application, give it a name, and agree to the tos
@@ -38,7 +39,11 @@ give it bot, manage roles, read messages/view channels, send messages, manage me
 
 put the client key in `secret.py`
 
+`echo secret.py >> gitignore`
+
 `python pointinator.py -o /path/to/files/`
+
+to update pointinator: `git pull origin`
 
 # daemonise
 diy but you can google crontab and/or systemd unit files. idk about windows prob task scheduler. gl

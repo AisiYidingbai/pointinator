@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.3"
-updated = "21-Apr-2024"
+ver = "2.3.1"
+updated = "23-May-2024"
 
 # Import packages
 import os                         # File I/O

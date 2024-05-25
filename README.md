@@ -20,8 +20,9 @@ same as above but you need to also create a bot user, invite it to your server, 
 * go to discord developer portal https://discord.com/developers/applications/ and log in with a user that has manage server permissions in the server you want to use pointinator in
 * in applications, create a new application, give it a name, and agree to the tos
 * in the settings for your app, go to oauth2, give it the "bot" scope, and give it the "manage roles", "read messages/view channels", "send messages", and "manage messages" permissions
+* allow the same permissions in the bot tab and also enable the "message content" privileged gateway intent
 * go to the bottom and copy-paste the generated url into your browser. log in again and choose the server you want to use pointinator in
-* you'll see pointinator joined. back in oauth2, scroll back up and note down the client secret. copy-paste it into the `key` variable in `secret.py` in this repo. this is how it logs in
+* you'll see pointinator joined. back in bot settings, scroll back up and generate a token with "reset token", note it down. copy-paste it into the `key` variable in `secret.py` in this repo. this is how it logs in
 * go to general information and mess around with the settings in there to personalise your pointinator
 * start up an instance of pointinator with `python pointinator.py -o /path/to/files`. it'll log in to your server
 * np enjoy
@@ -35,9 +36,9 @@ same as above but you need to also create a bot user, invite it to your server, 
 
 make an app https://discord.com/developers/applications/
 
-give it bot, manage roles, read messages/view channels, send messages, manage messages, and then invite it
+give it bot scope; manage roles, read messages/view channels, send messages, and manage messages permissions; and message content privileged gateway intent, and then invite it to your server
 
-put the client key in `secret.py`
+put the bot token in `secret.py`
 
 `echo secret.py >> gitignore`
 

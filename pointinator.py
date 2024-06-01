@@ -1080,21 +1080,29 @@ def roles_give(message, parsed):
     # Check inputs
     operands = len(parsed)
     sends = []
+
     if operands < 2:
         content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
         content = [content1]
     else:
-        string = parsed[1]
-        role = interpret(string, roles)
-        if role:
-            roleid = discord.utils.get(message.guild.roles, name = role)
-            send = [act_roles_give(message, roleid)]
-            sends = sends + send
-            content1 = "Adding you to " + role + "."
-            content = [content1]
-        else:
-            content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
-            content = [content1]
+        content = []
+        for i in range(1, operands):       
+            string = parsed[i]
+            role = interpret(string, roles)
+            if role:
+                roleid = discord.utils.get(message.guild.roles, name = role)
+                if roleid:
+                    send = [act_roles_give(message, roleid)]
+                    sends = sends + send
+                    content1 = "Adding you to " + role + ". "
+                    content.append(content1)
+                else:
+                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                    content.append(content1)
+            else:
+                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                content.append(content1)
+
     send = [channel_respond(message, colour, content)]
     sends = sends + send
     return sends
@@ -1108,17 +1116,24 @@ def roles_remove(message, parsed):
         content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
         content = [content1]
     else:
-        string = parsed[1]
-        role = interpret(string, roles)
-        if role:
-            roleid = discord.utils.get(message.guild.roles, name = role)
-            send = [act_roles_remove(message, roleid)]
-            sends = sends + send
-            content1 = "Removing you from " + role + "."
-            content = [content1]
-        else:
-            content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
-            content = [content1]
+        content = []
+        for i in range(1, operands):
+            string = parsed[i]
+            role = interpret(string, roles)
+            if role:
+                roleid = discord.utils.get(message.guild.roles, name = role)
+                if roleid:
+                    send = [act_roles_remove(message, roleid)]
+                    sends = sends + send
+                    content1 = "Removing you from " + role + ". "
+                    content.append(content1)
+                else:
+                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                    content.append(content1)
+            else:
+                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                content.append(content1)
+
     send = [channel_respond(message, colour, content)]
     sends = sends + send
     return sends

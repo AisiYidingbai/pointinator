@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.3.1"
+ver = "2.3.2"
 updated = "23-May-2024"
 
 # Import packages
@@ -1208,10 +1208,10 @@ async def on_message(message):                                                  
         return
     command = message.content                                                   # get the discord message and interpret it
     parsed = re.split("\s+", command)
-    if(str(message.channel) == "points"):                                       # don't chat in the wrong channels
+    if(str(message.channel) == channel_points):                                       # don't chat in the wrong channels
         send = points_channel(message, parsed)
         await send
-    elif(str(message.channel) == "roles"):
+    elif(str(message.channel) == channel_roles):
         send = roles_channel(message, parsed)
         for s in send: await s
         
@@ -1219,6 +1219,7 @@ async def on_message(message):                                                  
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--workdir", help = "Path to working directory.")
+parser.add_argument("-d", "--dev", action = 'store_true', default = False, help = "Run in developer mode.")
 args = parser.parse_args()
 
 # Interactive mode
@@ -1244,6 +1245,13 @@ bak2_queue = args.workdir + "/queue.bak2.txt"
 bak3_queue = args.workdir + "/queue.bak3.txt"
 file_params = args.workdir + "/params.txt"
 file_log = args.workdir + "/discord.log"
+
+channel_points = "points"
+channel_roles = "roles"
+
+if(args.dev):
+    channel_points = channel_points + "-dev"
+    channel_roles = channel_roles + "-dev"
 
 passthrough = False                                                             # set this flag when you want commands to be processed silently
 

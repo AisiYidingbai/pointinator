@@ -1027,6 +1027,7 @@ def points_undo(message, parsed):
 def points_uwu(message, parsed):
     colour = discord.Colour.red()
     content = """
+    ```
 ⡆⣐⢕⢕⢕⢕⢕⢕⢕⢕⠅⢗⢕⢕⢕⢕⢕⢕⢕⠕⠕⢕⢕⢕⢕⢕⢕⢕⢕⢕
 ⢐⢕⢕⢕⢕⢕⣕⢕⢕⠕⠁⢕⢕⢕⢕⢕⢕⢕⢕⠅⡄⢕⢕⢕⢕⢕⢕⢕⢕⢕
 ⢕⢕⢕⢕⢕⠅⢗⢕⠕⣠⠄⣗⢕⢕⠕⢕⢕⢕⠕⢠⣿⠐⢕⢕⢕⠑⢕⢕⠵⢕
@@ -1039,8 +1040,9 @@ def points_uwu(message, parsed):
 ⢕⢕⠅⣐⢕⢕⢕⢕⢕⣿⣿⡄⠛⢀⣦⠈⠛⢁⣼⣿⢗⢕⢕⢕⢕⢕⢕⡏⣘⢕
 ⢕⢕⠅⢓⣕⣕⣕⣕⣵⣿⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣷⣕⢕⢕⢕⢕⡵⢀⢕⢕
 ⢑⢕⠃⡈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢃⢕⢕⢕
-⣆⢕⠄⢱⣄⠛⢿⣿GOOD⣿⣿⣿⣿⣿⣿⣿LUCK⣿⣿⣿⠿⢁⢕⢕⠕⢁
+⣆⢕⠄⢱⣄⠛⢿⣿GOOD⣿⣿⣿⣿⣿⣿⣿LUCK⣿⣿⣿⠿⢁⢕⢕⠕⢐
 ⣿⣦⡀⣿⣿⣷⣶⣬⣍⣛⣛⣛⡛⠿⠿⠿⠛⠛⢛⣛⣉⣭⣤⣂⢜⠕⢑⣡⣴⣿
+```
     """
     send = channel_respond(message, colour, [content])
     return send

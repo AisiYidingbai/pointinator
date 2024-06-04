@@ -1082,10 +1082,13 @@ def roles_give(message, parsed):
     sends = []
 
     if operands < 2:
-        content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
+        content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles) + ". "
         content = [content1]
     else:
         content = []
+        if (operands > 2):
+            content = ["Multiple roles"]
+
         for i in range(1, operands):       
             string = parsed[i]
             role = interpret(string, roles)
@@ -1097,10 +1100,10 @@ def roles_give(message, parsed):
                     content1 = "Adding you to " + role + ". "
                     content.append(content1)
                 else:
-                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles) + ". "
                     content.append(content1)
             else:
-                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles) + ". "
                 content.append(content1)
 
     send = [channel_respond(message, colour, content)]
@@ -1112,11 +1115,15 @@ def roles_remove(message, parsed):
     # Check inputs
     operands = len(parsed)
     sends = []
+
     if operands < 2:
-        content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles)
+        content1 = "Possible commands: `give`, `remove`. Possible roles: " + ", ".join(roles) + ". "
         content = [content1]
     else:
         content = []
+        if (operands > 2):
+            content = ["Multiple roles"]
+
         for i in range(1, operands):
             string = parsed[i]
             role = interpret(string, roles)
@@ -1128,10 +1135,10 @@ def roles_remove(message, parsed):
                     content1 = "Removing you from " + role + ". "
                     content.append(content1)
                 else:
-                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                    content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles) + ". "
                     content.append(content1)
             else:
-                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles)
+                content1 = "Role " + string + " not found. Possible roles: " + ", ".join(roles) + ". "
                 content.append(content1)
 
     send = [channel_respond(message, colour, content)]

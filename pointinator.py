@@ -63,6 +63,7 @@ def io_params_save(x):
 #%% Common helper functions
 def interpret(x, y):                                                           # Find an exact or partial match for string x within list y. Return None if not found.
     r = None
+    x = re.sub("[^a-zA-Z0-9]", "", x)                                          # Remove non-alphanumeric characters
     y = set(y)
     if (r is None):
         for i in y:                                                            # x exists in y
@@ -1038,7 +1039,7 @@ def points_uwu(message, parsed):
 ⢕⢕⠅⣐⢕⢕⢕⢕⢕⣿⣿⡄⠛⢀⣦⠈⠛⢁⣼⣿⢗⢕⢕⢕⢕⢕⢕⡏⣘⢕
 ⢕⢕⠅⢓⣕⣕⣕⣕⣵⣿⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣷⣕⢕⢕⢕⢕⡵⢀⢕⢕
 ⢑⢕⠃⡈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢃⢕⢕⢕
-⣆⢕⠄⢱⣄⠛⢿⣿HAVE⣿⣿⣿♥⣿⣿⣿FUN⣿⣿⣿⣿⠿⢁⢕⢕⠕⢁
+⣆⢕⠄⢱⣄⠛⢿⣿GOOD⣿⣿⣿⣿⣿⣿⣿LUCK⣿⣿⣿⠿⢁⢕⢕⠕⢁
 ⣿⣦⡀⣿⣿⣷⣶⣬⣍⣛⣛⣛⡛⠿⠿⠿⠛⠛⢛⣛⣉⣭⣤⣂⢜⠕⢑⣡⣴⣿
     """
     send = channel_respond(message, colour, [content])
@@ -1086,13 +1087,22 @@ def roles_give(message, parsed):
         content = [content1]
     else:
         content = []
-        if (operands > 2):
+        uniqueCommands = list(set(parsed[1:operands]))
+        uniqueRoles = len(list(set([interpret(string, roles) for string in uniqueCommands])))
+        parsedRoles = []
+
+        if (uniqueRoles > 1):
             content = ["Multiple roles"]
 
-        for i in range(1, operands):       
-            string = parsed[i]
+        for i in range(0, len(uniqueCommands)):       
+            string = uniqueCommands[i]
             role = interpret(string, roles)
+
             if role:
+                if (role in parsedRoles):
+                    continue
+
+                parsedRoles.append(role)
                 roleid = discord.utils.get(message.guild.roles, name = role)
                 if roleid:
                     send = [act_roles_give(message, roleid)]
@@ -1121,13 +1131,22 @@ def roles_remove(message, parsed):
         content = [content1]
     else:
         content = []
-        if (operands > 2):
+        uniqueCommands = list(set(parsed[1:operands]))
+        uniqueRoles = len(list(set([interpret(string, roles) for string in uniqueCommands])))
+        parsedRoles = []
+
+        if (uniqueRoles > 1):
             content = ["Multiple roles"]
 
-        for i in range(1, operands):
-            string = parsed[i]
+        for i in range(0, len(uniqueCommands)):       
+            string = uniqueCommands[i]
             role = interpret(string, roles)
+
             if role:
+                if (role in parsedRoles):
+                    continue
+
+                parsedRoles.append(role)
                 roleid = discord.utils.get(message.guild.roles, name = role)
                 if roleid:
                     send = [act_roles_remove(message, roleid)]

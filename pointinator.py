@@ -8,8 +8,8 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.3.2"
-updated = "23-May-2024"
+ver = "2.3.3"
+updated = "18-Aug-2024"
 
 # Import packages
 import os                         # File I/O
@@ -87,23 +87,25 @@ def is_officer(x):                                                             #
     return r
 
 def man(x):
-    if (x == "add"):              r = "`a <p ...> <n>`: **Add** *n* points to *p*articipants."
-    if (x == "chat"):             r = "`c <...>`: Send a **chat** message in the #points channel without Pointinator interpreting it as a command."
-    if (x == "delete"):           r = "`del <p ...>`: **Delete** *p*articipants."
+    if (x == "add"):              r = "`a/add <p ...> <n>`: **Add** *n* points to *p*articipants."
+    if (x == "chat"):             r = "`c/chat <...>`: Send a **chat** message in the #points channel without Pointinator interpreting it as a command."
+    if (x == "delete"):           r = "`del/delete <p ...>`: **Delete** *p*articipants."
     if (x == "edit"):             r = "`edit <row> <column> <value>`: **Edit** the sheet at *row* and *column* to *value*. *column* must be one of `Participant`, `Type`, or `Value`."
     if (x == "edit value"):       r = "`edit <row> Participant <value>`: **Edit** the *row*th *Value* in the sheet to *value*. *value* must be a number."
     if (x == "edit type"):        r = "`edit <row> Type <value>`: **Edit** the *row*th *Type* to *value*. *value* must be one of `point` or `tier`."
-    if (x == "help"):             r = "`help`: Show **help** on Pointinator syntax."
-    if (x == "info"):             r = "`info`: Show **info** on Pointinator."
+    if (x == "help"):             r = "`h/help`: Show **help** on Pointinator syntax."
+    if (x == "info"):             r = "`i/info`: Show **info** on Pointinator."
     if (x == "get"):              r = "`get <param>`: **Get** a Pointinator *param*eter."
-    if (x == "new"):              r = "`n <p ...>`: Add **new** *p*articipants."
-    if (x == "offset"):           r = "`o <p ...> <n>`: **Offset** *n* tiers to *p*articipants."
+    if (x == "new"):              r = "`n/new <p ...>`: Add **new** *p*articipants."
+    if (x == "offset"):           r = "`o/offset <p ...> <n>`: **Offset** *n* tiers to *p*articipants."
+    if (x == "payout"):           r = "`p/payout`: Summarise current payout per participant in lexicographical order."
     if (x == "points"):           r = "`points`: Show **point** values."
-    if (x == "reset"):            r = "`r`: **Reset** the sheet."
+    if (x == "rename"):           r = "`ren/rename <p1> <p2>`: **Rename** all instances of *p*articipant1 to *p*articipant2."
+    if (x == "reset"):            r = "`r/reset`: **Reset** the sheet."
     if (x == "set"):              r = "`set <param> <value>`: **Set** a Pointinator *param*eter to *value*."
     if (x == "show"):             r = "`show`: **Show** the current sheet."
-    if (x == "split"):            r = "`s <p ...> <n>`: **Split** *n* points between *p*articipants."
-    if (x == "tail"):             r = "`tail <n>`: **Tail** the last *n* sheet actions."
+    if (x == "split"):            r = "`s/split <p ...> <n>`: **Split** *n* points between *p*articipants."
+    if (x == "tail"):             r = "`t/tail <n>`: **Tail** the last *n* sheet actions."
     if (x == "tiers"):            r = "`tiers`: Show the current point requirements per **tier**."
     if (x == "undo"):             r = "`z`: **Undo** the last change."
     if (x == "whois"):            r = "`whois <nickname>`: See if I can convert a *nickname* to a participant already on the board."
@@ -190,7 +192,8 @@ def logistic_inverse(y): # use logistic shape to calculate points from tier
 
 #%% Actions: points
 def act_points_add(participant, value, kind, sheet):
-    sheet = sheet.loc[sheet['Participant'] != "No-one yet"]                        # delete the initialising entry for new sheets if it is there
+    if kind == "point":
+        sheet = sheet.loc[sheet['Participant'] != "No-one yet"]                 # delete the initialising entry for new sheets if it is there
     date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")                         # get the current date and time
     sheet = pd.concat([sheet, pd.DataFrame({'Participant':[participant], 'Value':[value], 'Type':[str(kind)], 'Date':[date]})]) # add an entry to the sheet
     return sheet
@@ -210,6 +213,17 @@ def act_points_new(participant, sheet):
     sheet = sheet.loc[sheet['Participant'] != "No-one yet"]                        # delete the initialising entry for new sheets if it is there
     date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")                         # get the current date and time
     sheet = pd.concat([sheet, pd.DataFrame({'Participant':[participant], 'Value':[0], 'Type':["point"], 'Date':[date]})]) # add an entry to the sheet
+    return sheet
+
+def act_points_rename(participant1, participant2, sheet):
+    date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    # Copy sheet rows belonging to participant1 and update to participant2
+    sheet2 = sheet.loc[sheet['Participant'] == participant1]
+    sheet2['Participant'] = participant2
+    sheet2['Date'] = date
+    # Remove sheet rows belonging to participant1 and bind rows
+    sheet = sheet.loc[sheet['Participant'] != participant1]
+    sheet = pd.concat([sheet, sheet2])
     return sheet
 
 def act_points_reset():
@@ -380,7 +394,7 @@ def points_add(message, parsed):
             sheet = act_points_add(participant, value, "point", sheet)
             io_points_save(sheet)
             content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", " + str(value) + " points were given to " + participant + "."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
@@ -398,7 +412,7 @@ def points_add(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -539,6 +553,7 @@ def points_man(message, parsed):
     content2 = content2 + "\n\t" + man("show")
     content2 = content2 + "\n\t" + man("delete")
     content2 = content2 + "\n\t" + man("undo")
+    content2 = content2 + "\n\t" + man("rename")
     content2 = content2 + "\n\t" + man("reset")
     content2 = content2 + "\n\t" + man("tail")
     content2 = content2 + "\n\t" + man("tiers")
@@ -645,7 +660,7 @@ def points_offset(message, parsed):
             sheet = act_points_add(participant, value, "tier", sheet)
             io_points_save(sheet)
             content2 = rng(["Gotcha"]) + ", " + str(value) + " tiers were given to " + participant + "."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
@@ -663,7 +678,7 @@ def points_offset(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Nice"]) + ", " + participants + " each got " + str(value) + " tiers."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -792,6 +807,43 @@ def points_queue(message, parsed):
     send = channel_respond(message, colour, content)
     return send
 
+def points_rename(message, parsed):
+    # Check officer
+    if is_officer(message):
+        colour = discord.Colour.teal()
+        content1 = command_echo(message)
+        # Check operands
+        operands = len(parsed)
+        if operands == 1 or operands > 3:
+            content2 = "Problem with `rename`: expected at least one or two operands, got " + str(operands-1) + ".\nUsage: " + man("rename")
+            content = [content1, content2]
+        else:
+            sheet = io_points_load()
+            participants = list(dict.fromkeys(sheet['Participant']))
+            participant1 = interpret(parsed[1], participants)
+            # Check that participant1 exists
+            if participant1 is None:
+                content2 = "Problem with `rename`: couldn't find " + parsed[1] + ".\nUsage: " + man("rename")
+                content = [content1, content2]
+            # Do
+            else:
+                if participant1 in participants:
+                    participants.remove(participant1)
+                if operands == 2:
+                    parsed.append(parsed[1])
+                participant2 = interpret(parsed[2], participants)
+                if participant2 is None:
+                    participant2 = parsed[2]
+                sheet = act_points_rename(participant1, participant2, sheet)
+                io_points_save(sheet)
+                content2 = "Replaced " + participant1 + " with " + participant2 + "."
+                content3 = "```" + str(act_points_show(filter = [participant2])) + "```"
+                content = [content1, content2, content3]
+        send = channel_respond(message, colour, content)
+    else:
+        send = queue_add(message, parsed)
+    return send            
+
 def points_reset(message, parsed):
     if is_officer(message):
         colour = discord.Colour.teal()
@@ -878,7 +930,7 @@ def points_split(message, parsed):
             sheet = act_points_add(participant, value, "point", sheet)
             io_points_save(sheet)
             content2 = rng(["Good stuff", "Gerat", "Superb", "Well done", "Much thank", "Hekaru yeah", "Noice"]) + ", " + str(value) + " points were given to " + participant + "."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         else:
             participants = ""
@@ -897,7 +949,7 @@ def points_split(message, parsed):
                 else:                  participants = participants + "and " + participant
             io_points_save(sheet)
             content2 = rng(["Noice effort", "Everyone is best", "Good job, crew", "Well done everyone", "Guildies% much", "Stonks", "Such activity"]) + ", " + participants + " each got " + str(value) + " points."
-            content3 = "```" + str(act_points_show(filter = filter)) + "```"
+            content3 = "```" + str(act_points_show(filter = list(dict.fromkeys(filter)))) + "```"
             content = [content1, content2, content3]
         send = channel_respond(message, colour, content)
         return send
@@ -1178,28 +1230,29 @@ def roles_syntax(message, parsed):
 #%% #points channel function selector
 def points_channel(message, parsed):
     keyword = parsed[0].lower()
-    if(keyword == "a"   or keyword == "add"):      send = points_add(message, parsed)
-    elif(keyword == "c"   or keyword == "chat"):   send = points_chat(message, parsed)
-    elif(keyword == "del" or keyword == "delete"): send = points_delete(message, parsed)
-    elif(keyword == "edit"):                       send = points_edit(message, parsed)
-    elif(keyword == "get"):                        send = points_get(message, parsed)
-    elif(keyword == "help"):                       send = points_man(message, parsed)
-    elif(keyword == "info"):                       send = points_info(message, parsed)
-    elif(keyword == "n"   or keyword == "new"):    send = points_new(message, parsed)
-    elif(keyword == "o"   or keyword == "offset"): send = points_offset(message, parsed)
-    elif(keyword == "points"):                     send = points_points(message, parsed)
-    elif(keyword == "payout" or keyword == "p"):   send = points_payout(message, parsed)
-    elif(keyword == "q"   or keyword == "queue"):  send = points_queue(message, parsed)
-    elif(keyword == "r"   or keyword == "reset"):  send = points_reset(message, parsed)
-    elif(keyword == "s"   or keyword == "split"):  send = points_split(message, parsed)
-    elif(keyword == "t"   or keyword == "tail"):   send = points_tail(message, parsed)
-    elif(keyword == "tiers"):                      send = points_tiers(message, parsed)
-    elif(keyword == "set"):                        send = points_set(message, parsed)
-    elif(keyword == "sh"  or keyword == "show"):   send = points_show(message, parsed)
-    elif(keyword == "whois"):                      send = points_whois(message, parsed)
-    elif(keyword == "z"   or keyword == "undo"):   send = points_undo(message, parsed)
-    elif(keyword == "uwu"):                        send = points_uwu(message, parsed)
-    else:                                          send = points_syntax(message, parsed)
+    if(keyword in ["a", "add"]):        send = points_add(message, parsed)
+    elif(keyword in ["c", "chat"]):     send = points_chat(message, parsed)
+    elif(keyword in ["del", "delete"]): send = points_delete(message, parsed)
+    elif(keyword in ["edit"]):          send = points_edit(message, parsed)
+    elif(keyword in ["get"]):           send = points_get(message, parsed)
+    elif(keyword in ["h", "help"]):     send = points_man(message, parsed)
+    elif(keyword in ["i", "info"]):     send = points_info(message, parsed)
+    elif(keyword in ["n", "new"]):      send = points_new(message, parsed)
+    elif(keyword in ["o", "offset"]):   send = points_offset(message, parsed)
+    elif(keyword in ["points"]):        send = points_points(message, parsed)
+    elif(keyword in ["payout", "p"]):   send = points_payout(message, parsed)
+    elif(keyword in ["q", "queue"]):    send = points_queue(message, parsed)
+    elif(keyword in ["ren", "rename"]): send = points_rename(message, parsed)
+    elif(keyword in ["r", "reset"]):    send = points_reset(message, parsed)
+    elif(keyword in ["s", "split"]):    send = points_split(message, parsed)
+    elif(keyword in ["t", "tail"]):     send = points_tail(message, parsed)
+    elif(keyword in ["tiers"]):         send = points_tiers(message, parsed)
+    elif(keyword in ["set"]):           send = points_set(message, parsed)
+    elif(keyword in ["sh", "show"]):    send = points_show(message, parsed)
+    elif(keyword in ["whois"]):         send = points_whois(message, parsed)
+    elif(keyword in ["z", "undo"]):     send = points_undo(message, parsed)
+    elif(keyword in ["uwu"]):           send = points_uwu(message, parsed)
+    else:                               send = points_syntax(message, parsed)
     return send
 
 #%% #roles channel function selector

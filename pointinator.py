@@ -8,7 +8,7 @@ Created on Mon Jan 31 15:42:10 2022
 @author: AisiYidingbai
 """
 
-ver = "2.3.3"
+ver = "2.3.4"
 updated = "18-Aug-2024"
 
 # Import packages
@@ -877,7 +877,15 @@ def points_reset(message, parsed):
             content2 = "Are you sure? This will wipe the sheet. Type `reset confirm` to confirm you want to do this."
             content = [content1, content2]
         elif parsed[1] == "confirm":
+            sheet = io_points_load()
+            participants = set(sheet[sheet['Value'] > 0]['Participant'])
             act_points_reset()
+            # Check who the participants were on the old sheet and copy them to the new sheet
+            sheet = io_points_load()
+            if len(participants) > 0:
+                for p in participants:
+                    sheet = act_points_new(p, sheet)
+                io_points_save(sheet)
             content2 = "Wiped the sheet."
             content = [content1, content2]
         else:

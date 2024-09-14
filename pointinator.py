@@ -9,7 +9,7 @@ Created on Mon Jan 31 15:42:10 2022
 """
 
 ver = "2.3.4"
-updated = "18-Aug-2024"
+updated = "14-Sep-2024"
 
 # Import packages
 import os                         # File I/O
@@ -596,7 +596,7 @@ def points_info(message, parsed):
     content2 = """
 \tWelcome to **Pointinator**, a Discord bot that keeps track of points. This version """ + ver + """, last updated """ + updated + """.
 \n\t*About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
-\n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`. For detailed usage, see the guide at <https://havefun.servegame.com/index.php/how-to-pointinate/>.
+\n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`. For detailed usage, see the guide at <https://goodluck.servegame.com/index.php/how-to-pointinate/>.
 \n\t*Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
 \n\t*Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>. 
 """
@@ -1055,7 +1055,7 @@ def points_show(message, parsed):
 def points_payout(message, parsed):
     colour = discord.Colour.teal()
     content1 = command_echo(message)
-    content2 = "Here's the board in alphabetical order. " + rng(["Thankswali for stonksing us!", "Wali is great.", "Hope this helmps!", "Congratulations to everyone!", "Thanks for another successful board!", "Let's commit tax fraud."])
+    content2 = "Here's the board in alphabetical order. " + rng(["Thankswali for stonksing us!", "Wali is great.", "Hope this helmps!", "Congratulations to everyone!", "Thanks for another successful board!", "Time to evade tax.", "Np enjoy!"])
     content3 = "```" + str(act_points_show("Participant")) + "```"
     content = [content1, content2, content3]
     send = channel_respond(message, colour, content)
@@ -1148,7 +1148,7 @@ def points_syntax(message, parsed):
     content1 = command_echo(message)
     content2 = """
         Possible Pointinator commands:
-        `add`, `split`, `offset`, `new`, `show`, `delete`, `undo`, `queue`, `reset`, `tail`, `tiers`, `whois`, `set`, `edit`, `points`, `help`, `info`, `chat`.\n
+        `add`, `split`, `offset`, `new`, `rename`, `delete`, `undo`, `show`, `payout`, `queue`, `reset`, `tail`, `tiers`, `whois`, `set`, `get`, `edit`, `points`, `help`, `info`, `chat`.\n
         Issue `help` for detailed usage instructions.
         """
     content = [content1, content2]
@@ -1395,7 +1395,7 @@ if(args.dev):
 
 passthrough = False                                                             # set this flag when you want commands to be processed silently
 
-roles = ["Vell", "Sailies", "Guildbosses", "Khan", "Leeching", "PvP", "Atoraxxion", "Othergaming"]
+roles = ["Vell", "Sailies", "Guildbosses", "Khan", "Leeching", "PvP", "Atoraxxion", "Othergaming", "Black Shrine"]
 
 if(os.path.exists(file_params)):
     params = io_params_load()

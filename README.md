@@ -32,27 +32,26 @@ you need to specify a path where the sheets will live with `-o`, if the sheets a
 
 # instructions if you're not helm
 in short, you need to
-* create a bot user
-* invite it to your server
-* generate its secret key so that it can log in
-* install pointinator
-* install the secret key
-* set up a daemon process to let it run in the background
-* prepare your server
-* test it out
+1. create a bot user
+2. invite it to your server and generate its secret key so that it can log in
+3. install pointinator and install the secret key
+4. let it run in the background
+5. prepare your server
+6. test it out
+7. np enjoy
 
-## create a bot user
+## 1. create a bot user
 * go to discord developer portal https://discord.com/developers/applications/ and log in with a user that has manage server permissions in the server you want to use pointinator in
 * in applications, create a new application, give it a name, and agree to the tos
 * in the settings for your app, go to oauth2, give it the "bot" scope, and give it the "manage roles", "read messages/view channels", "send messages", and "manage messages" permissions
 * allow the same permissions in the bot tab and also enable the "message content" privileged gateway intent
 
-## invite it to your server and generate its secret key so that it can log in
+## 2. invite it to your server and generate its secret key so that it can log in
 * go to the bottom and copy-paste the generated url into your browser. log in again and choose the server you want to use pointinator in
 * you'll see pointinator joined. back in bot settings, scroll back up and generate a token with "reset token", note it down. copy-paste it into the `key` variable in `secret.py` in this repo. this is how it logs in
 * go to general information and mess around with the settings in there to personalise your pointinator
 
-## install pointinator and the secret key
+## 3. install pointinator and the secret key
 * in terminal, git clone this repo into the directory where you want pointinator to be installed: `git clone https://github.com/AisiYidingbai/pointinator.git` and then `cd` into it
 * install python using your preferred method
 * install dependencies: `pip install -r requirements.txt`
@@ -60,7 +59,7 @@ in short, you need to
 * add secret.py into your gitignore: `echo secret.py >> .gitignore`
 * start up an instance of pointinator with `python pointinator.py -o /path/to/files`. it'll log in to your server
 
-## set up a daemon process to let it run in the background
+## 4. let it run in the background
 this section lets pointinator run in the background and might be different depending on your system
 * create a unit file, e.g. `nano /etc/systemd/system/pointinator.service`
 * type this. you'll need to edit the "ExecStart" line for the correct command depending on your installation. also edit the "user" and "group" for the correct user and group that is going to run the pointinator. use `whoami` and `groups` to find these out
@@ -78,13 +77,13 @@ WantedBy=multi.user.target
 * enable: `systemctl enable pointinator`
 * start it up: `systemctl start pointinator`
 
-## prepare your server
+## 5. prepare your server
 pointinator stalks chat in the #points and #roles channels. add them, and add the roles that pointinator manages. the list is at the top of this readme
 * add a #points channel
 * add a #roles channel
 * add the roles that pointinator can manage. make sure those roles are below the pointinator role
 
-## test it out
+## 6. test it out
 * try out some commands in #roles such as `give othergaming`
 * try out some commands in #points such as `add Yidingbai 40`
 * get a syntax reminder in the #roles channel by keyboardsmashing
@@ -119,7 +118,7 @@ echo secret.py >> .gitignore
 python pointinator.py -o /path/to/files/
 ```
 
-to daemonise pointinator:
+to background pointinator:
 ```
 nano /etc/systemd/system/pointinator.service
 ```

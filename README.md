@@ -1,5 +1,21 @@
 # pointinator
-discord bot that accepts commands from chat and tallies points and calculates reward tiers
+discord bot that accepts commands from chat and tallies points, calculates reward tiers, and manages roles
+
+## roles supported
+Vell, Sailies, Guildbosses, Khan, Leeching, PvP, Atoraxxion, Othergaming, Black Shrine
+
+yep this bot is designed for bdo. there's no reason you can't use it for other things though
+
+## points features
+pointinator listens for commands and keeps counts of points. use `add Yidingbai 40` to give flat points, `split Yidingbai Helmutchan 60` to divide points, and `payout` to calculate the leaderboard
+
+nicknames and shorthand syntax is supported, e.g. `a yid 40`, `s yid helm 60`, and `p`
+
+leaderboard tiering supports logarithmic and logistic scaling and tiers can also be given directly
+
+access to commands is limited by role. anyone with the Officers role gets direct access to pointinator commands. anyone without adds their commands to the queue for approval by an Officer
+
+upon a reset, pointinator remembers the names of participants awarded with at least 1 point or tier from the previous leaderboard
 
 # hi helm
 so basically you `git clone https://github.com/AisiYidingbai/pointinator.git` this repo, install python, and then `pip install -r requirements.txt`, discord.py, numpy, and pandas, and run it.
@@ -22,6 +38,8 @@ in short, you need to
 * install pointinator
 * install the secret key
 * set up a daemon process to let it run in the background
+* prepare your server
+* test it out
 
 ## create a bot user
 * go to discord developer portal https://discord.com/developers/applications/ and log in with a user that has manage server permissions in the server you want to use pointinator in
@@ -59,6 +77,18 @@ WantedBy=multi.user.target
 * reload: `systemctl daemon-reload`. you might need to `sudo`
 * enable: `systemctl enable pointinator`
 * start it up: `systemctl start pointinator`
+
+## prepare your server
+pointinator stalks chat in the #points and #roles channels. add them, and add the roles that pointinator manages. the list is at the top of this readme
+* add a #points channel
+* add a #roles channel
+* add the roles that pointinator can manage. make sure those roles are below the pointinator role
+
+## test it out
+* try out some commands in #roles such as `give othergaming`
+* try out some commands in #points such as `add Yidingbai 40`
+* get a syntax reminder in the #roles channel by keyboardsmashing
+* see information in the #points channel by typing `help`, `info`, and `points`
 
 ## troubleshooting
 * update pointinator: `cd` to the repo folder and run `git pull origin`

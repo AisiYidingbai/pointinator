@@ -9,21 +9,48 @@ Created on Mon Jan 31 15:42:10 2022
 """
 
 import __main__ as main
-import secret                     # Discord key/token
 import discord                    # Discord
 import argparse                   # Commandline interface
-from datetime import datetime     # Date and time
 import pandas as pd               # Dataframes
 import numpy as np                # Math
-from math import e                # Constant e
 import logging                    # Logging
 import json                       # File I/O
 import re                         # Text matching
 import os                         # File I/O
+from datetime import datetime     # Date and time
+from math import e                # Constant e
+from pathlib import Path          # High-level file system access
 ver = "2.3.4"
 updated = "14-Sep-2024"
 
-# Import packages
+
+# %% Load secret key for API access
+
+
+secret_key = None
+key_file_path = Path("secret.key")
+
+if key_file_path.is_file():
+    with open(key_file_path, "r", encoding="utf-8") as key_file:
+        lines = key_file.readlines()
+
+    nonempty_lines = [line.strip() for line in lines if len(line.strip()) > 0]
+
+    if len(nonempty_lines) != 1:
+        raise RuntimeError(f"`{key_file_path}` must contain exactly 1 API token. {len(nonempty_lines)} given.")
+
+    secret_key = nonempty_lines[0]
+else:
+    # Fallback to importing `secret.py`
+    try:
+        import secret
+    except ModuleNotFoundError as err:
+        raise FileNotFoundError("File `secret.py` not found!") from err
+
+    secret_key = secret.key
+    print("[WARN] Usage of `secret.py` has been deprecated and might be removed in future versions.",
+          "Please use `secret.key` instead.")
+
 
 # %% Common I/O functions
 
@@ -78,6 +105,8 @@ def io_params_save(x):
 
 
 # %% Common helper functions
+
+
 # Find an exact or partial match for string x within list y. Return None
 # if not found.
 def interpret(x, y):
@@ -120,62 +149,62 @@ def is_officer(x):
     return r
 
 
-def man(x):
-    if (x == "add"):
-        r = "`a/add <p ...> <n>`: **Add** *n* points to *p*articipants."
-    if (x == "chat"):
-        r = "`c/chat <...>`: Send a **chat** message in the #points channel without Pointinator interpreting it as a command."
-    if (x == "delete"):
-        r = "`del/delete <p ...>`: **Delete** *p*articipants."
-    if (x == "edit"):
-        r = "`edit <row> <column> <value>`: **Edit** the sheet at *row* and *column* to *value*. *column* must be one of `Participant`, `Type`, or `Value`."
-    if (x == "edit value"):
-        r = "`edit <row> Participant <value>`: **Edit** the *row*th *Value* in the sheet to *value*. *value* must be a number."
-    if (x == "edit type"):
-        r = "`edit <row> Type <value>`: **Edit** the *row*th *Type* to *value*. *value* must be one of `point` or `tier`."
-    if (x == "help"):
-        r = "`h/help`: Show **help** on Pointinator syntax."
-    if (x == "info"):
-        r = "`i/info`: Show **info** on Pointinator."
-    if (x == "get"):
-        r = "`get <param>`: **Get** a Pointinator *param*eter."
-    if (x == "new"):
-        r = "`n/new <p ...>`: Add **new** *p*articipants."
-    if (x == "offset"):
-        r = "`o/offset <p ...> <n>`: **Offset** *n* tiers to *p*articipants."
-    if (x == "payout"):
-        r = "`p/payout`: Summarise current payout per participant in lexicographical order."
-    if (x == "points"):
-        r = "`points`: Show **point** values."
-    if (x == "rename"):
-        r = "`ren/rename <p1> <p2>`: **Rename** all instances of *p*articipant1 to *p*articipant2."
-    if (x == "reset"):
-        r = "`r/reset`: **Reset** the sheet."
-    if (x == "set"):
-        r = "`set <param> <value>`: **Set** a Pointinator *param*eter to *value*."
-    if (x == "show"):
-        r = "`show`: **Show** the current sheet."
-    if (x == "split"):
-        r = "`s/split <p ...> <n>`: **Split** *n* points between *p*articipants."
-    if (x == "tail"):
-        r = "`t/tail <n>`: **Tail** the last *n* sheet actions."
-    if (x == "tiers"):
-        r = "`tiers`: Show the current point requirements per **tier**."
-    if (x == "undo"):
-        r = "`z`: **Undo** the last change."
-    if (x == "whois"):
-        r = "`whois <nickname>`: See if I can convert a *nickname* to a participant already on the board."
-
-    if (x == "queue"):
-        r = "`q`: Show the **queue**."
-    if (x == "queue approve"):
-        r = "`q a`: **Approve** the request at the top of the queue."
-    if (x == "queue deny"):
-        r = "`q d`: **Deny** the request at the top of the queue."
-    if (x == "queue queue"):
-        r = "`q q <requestor> <request>`: Manually add an entry to the **queue** with *requestor* and *request*."
-    if (x == "queue undo"):
-        r = "`q z`: **Undo** the last change to the queue."
+def man(cmd):
+    match cmd:
+        case "add":
+            r = "`a/add <p ...> <n>`: **Add** *n* points to *p*articipants."
+        case "chat":
+            r = "`c/chat <...>`: Send a **chat** message in the #points channel without Pointinator interpreting it as a command."
+        case "delete":
+            r = "`del/delete <p ...>`: **Delete** *p*articipants."
+        case "edit":
+            r = "`edit <row> <column> <value>`: **Edit** the sheet at *row* and *column* to *value*. *column* must be one of `Participant`, `Type`, or `Value`."
+        case "edit value":
+            r = "`edit <row> Participant <value>`: **Edit** the *row*th *Value* in the sheet to *value*. *value* must be a number."
+        case "edit type":
+            r = "`edit <row> Type <value>`: **Edit** the *row*th *Type* to *value*. *value* must be one of `point` or `tier`."
+        case "help":
+            r = "`h/help`: Show **help** on Pointinator syntax."
+        case "info":
+            r = "`i/info`: Show **info** on Pointinator."
+        case "get":
+            r = "`get <param>`: **Get** a Pointinator *param*eter."
+        case "new":
+            r = "`n/new <p ...>`: Add **new** *p*articipants."
+        case "offset":
+            r = "`o/offset <p ...> <n>`: **Offset** *n* tiers to *p*articipants."
+        case "payout":
+            r = "`p/payout`: Summarise current payout per participant in lexicographical order."
+        case "points":
+            r = "`points`: Show **point** values."
+        case "rename":
+            r = "`ren/rename <p1> <p2>`: **Rename** all instances of *p*articipant1 to *p*articipant2."
+        case "reset":
+            r = "`r/reset`: **Reset** the sheet."
+        case "set":
+            r = "`set <param> <value>`: **Set** a Pointinator *param*eter to *value*."
+        case "show":
+            r = "`show`: **Show** the current sheet."
+        case "split":
+            r = "`s/split <p ...> <n>`: **Split** *n* points between *p*articipants."
+        case "tail":
+            r = "`t/tail <n>`: **Tail** the last *n* sheet actions."
+        case "tiers":
+            r = "`tiers`: Show the current point requirements per **tier**."
+        case "undo":
+            r = "`z`: **Undo** the last change."
+        case "whois":
+            r = "`whois <nickname>`: See if I can convert a *nickname* to a participant already on the board."
+        case "queue":
+            r = "`q`: Show the **queue**."
+        case "queue approve":
+            r = "`q a`: **Approve** the request at the top of the queue."
+        case "queue deny":
+            r = "`q d`: **Deny** the request at the top of the queue."
+        case "queue queue":
+            r = "`q q <requestor> <request>`: Manually add an entry to the **queue** with *requestor* and *request*."
+        case "queue undo":
+            r = "`q z`: **Undo** the last change to the queue."
     return r
 
 
@@ -1747,4 +1776,4 @@ if (not os.path.exists(file_points)):
 handler = logging.FileHandler(filename=file_log, encoding='utf-8', mode='w')
 
 # run bot
-client.run(secret.key, reconnect=True, log_handler=handler)
+client.run(secret_key, reconnect=True, log_handler=handler)

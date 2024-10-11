@@ -9,32 +9,55 @@ Created on Mon Jan 31 15:42:10 2022
 """
 
 import __main__ as main
-import discord                    # Discord
-import argparse                   # Commandline interface
-import pandas as pd               # Dataframes
-import numpy as np                # Math
-import logging                    # Logging
-import json                       # File I/O
-import re                         # Text matching
-import os                         # File I/O
-from datetime import datetime     # Date and time
-from math import e                # Constant e
-from pathlib import Path          # High-level file system access
+import discord                         # Discord
+import argparse                        # Commandline interface
+import pandas as pd                    # Dataframes
+import numpy as np                     # Math
+import logging                         # Logging
+import json                            # File I/O
+import re                              # Text matching
+import os                              # File I/O
+from datetime import datetime          # Date and time
+from math import e                     # Constant e
+from pathlib import Path               # High-level file system access
+from configparser import ConfigParser  # Config parsing
 ver = "2.3.4"
 updated = "14-Sep-2024"
+
+
+# %% Load configuration from file
+
+
+config_file_path = Path("config.ini")
+
+if not config_file_path.is_file():
+    print("[WARN] No configuration file found")
+
+    default_config_file_path = Path("default_config.ini")
+    with (
+        open(config_file_path, "wb") as ofile,
+        open(default_config_file_path, "rb") as ifile
+    ):
+        ofile.write(ifile.read())
+    print(f"[INFO] Created default configuration file `{config_file_path}`")
+
+with open(config_file_path, "r", encoding="utf-8") as ifile:
+    config = ConfigParser()
+    config.read_file(ifile)
+
+key_file_path = Path(config["general"]["key_file"])
 
 
 # %% Load secret key for API access
 
 
 secret_key = None
-key_file_path = Path("secret.key")
 
 if key_file_path.is_file():
     with open(key_file_path, "r", encoding="utf-8") as key_file:
         lines = key_file.readlines()
 
-    nonempty_lines = [line.strip() for line in lines if len(line.strip()) > 0]
+    nonempty_lines = [line.strip() for line in lines if line.strip()]
 
     if len(nonempty_lines) != 1:
         raise RuntimeError(f"`{key_file_path}` must contain exactly 1 API token. {len(nonempty_lines)} given.")
@@ -145,8 +168,7 @@ def interpret(x, y):
 
 # Check if the sender of message x has the Officers role
 def is_officer(x):
-    r = "Officers" in str(x.author.roles)
-    return r
+    return any(role.name == "Officers" for role in x.author.roles)
 
 
 def man(cmd):
@@ -1563,52 +1585,53 @@ def roles_syntax(message, parsed):
 
 def points_channel(message, parsed):
     keyword = parsed[0].lower()
-    if (keyword in ["a", "add"]):
-        send = points_add(message, parsed)
-    elif (keyword in ["c", "chat"]):
-        send = points_chat(message, parsed)
-    elif (keyword in ["del", "delete"]):
-        send = points_delete(message, parsed)
-    elif (keyword in ["edit"]):
-        send = points_edit(message, parsed)
-    elif (keyword in ["get"]):
-        send = points_get(message, parsed)
-    elif (keyword in ["h", "help"]):
-        send = points_man(message, parsed)
-    elif (keyword in ["i", "info"]):
-        send = points_info(message, parsed)
-    elif (keyword in ["n", "new"]):
-        send = points_new(message, parsed)
-    elif (keyword in ["o", "offset"]):
-        send = points_offset(message, parsed)
-    elif (keyword in ["points"]):
-        send = points_points(message, parsed)
-    elif (keyword in ["payout", "p"]):
-        send = points_payout(message, parsed)
-    elif (keyword in ["q", "queue"]):
-        send = points_queue(message, parsed)
-    elif (keyword in ["ren", "rename"]):
-        send = points_rename(message, parsed)
-    elif (keyword in ["r", "reset"]):
-        send = points_reset(message, parsed)
-    elif (keyword in ["s", "split"]):
-        send = points_split(message, parsed)
-    elif (keyword in ["t", "tail"]):
-        send = points_tail(message, parsed)
-    elif (keyword in ["tiers"]):
-        send = points_tiers(message, parsed)
-    elif (keyword in ["set"]):
-        send = points_set(message, parsed)
-    elif (keyword in ["sh", "show"]):
-        send = points_show(message, parsed)
-    elif (keyword in ["whois"]):
-        send = points_whois(message, parsed)
-    elif (keyword in ["z", "undo"]):
-        send = points_undo(message, parsed)
-    elif (keyword in ["uwu"]):
-        send = points_uwu(message, parsed)
-    else:
-        send = points_syntax(message, parsed)
+    match keyword:
+        case "a" | "add":
+            send = points_add(message, parsed)
+        case "c" | "chat":
+            send = points_chat(message, parsed)
+        case "del" | "delete":
+            send = points_delete(message, parsed)
+        case "edit":
+            send = points_edit(message, parsed)
+        case "get":
+            send = points_get(message, parsed)
+        case "h" | "help":
+            send = points_man(message, parsed)
+        case "i" | "info":
+            send = points_info(message, parsed)
+        case "n" | "new":
+            send = points_new(message, parsed)
+        case "o" | "offset":
+            send = points_offset(message, parsed)
+        case "points":
+            send = points_points(message, parsed)
+        case "p" | "payout":
+            send = points_payout(message, parsed)
+        case "q" | "queue":
+            send = points_queue(message, parsed)
+        case "ren" | "rename":
+            send = points_rename(message, parsed)
+        case "r" | "reset":
+            send = points_reset(message, parsed)
+        case "s" | "split":
+            send = points_split(message, parsed)
+        case "t" | "tail":
+            send = points_tail(message, parsed)
+        case "tiers":
+            send = points_tiers(message, parsed)
+        case "set":
+            send = points_set(message, parsed)
+        case "sh" | "show":
+            send = points_show(message, parsed)
+        case "whois":
+            send = points_whois(message, parsed)
+        case "z" | "undo":
+            send = points_undo(message, parsed)
+        case "uwu":
+            send = points_uwu(message, parsed)
+        case _:
+            send = points_syntax(message, parsed)
     return send
 
 # %% #roles channel function selector
@@ -1627,30 +1650,32 @@ def roles_channel(message, parsed):
 # %% Discord
 
 
-intents = discord.Intents(  # auto_moderation = True,
-    # auto_moderation_configuration = True,
-    # auto_moderation_execution = True,
-    # bans = True,
-    # dm_messages = True,
-    # dm_reactions = True,
-    # dm_typing = True,
-    # emojis = True,
-    # emojis_and_stickers = True,
+intents = discord.Intents(
+    # auto_moderation=True,
+    # auto_moderation_configuration=True,
+    # auto_moderation_execution=True,
+    # bans=True,
+    # dm_messages=True,
+    # dm_reactions=True,
+    # dm_typing=True,
+    # emojis=True,
+    # emojis_and_stickers=True,
     guild_messages=True,
-    # guild_reactions = True,
-    # guild_scheduled_events = True,
-    # guild_typing = True,
+    # guild_reactions=True,
+    # guild_scheduled_events=True,
+    # guild_typing=True,
     guilds=True,
-    # integrations = True,
-    # invites = True,
-    # members = True,
+    # integrations=True,
+    # invites=True,
+    # members=True,
     message_content=True,
-    messages=True)  # ,
-# presences = True,
-# reactions = True,
-# typing = True,
-# voice_states = True,
-# webhooks = True)
+    messages=True,
+    # presences=True,
+    # reactions=True,
+    # typing=True,
+    # voice_states=True,
+    # webhooks=True,
+)
 
 client = discord.Client(intents=intents)
 
@@ -1694,6 +1719,15 @@ parser.add_argument(
     help="Run in developer mode.")
 args = parser.parse_args()
 
+workdir = config["files"]["workdir"]
+if args.workdir is not None:
+    # override static configuration
+    workdir = args.workdir
+workdir = Path(workdir)
+
+# create working directory if it doesn't exist
+workdir.mkdir(parents=True, exist_ok=True)
+
 # Interactive mode
 if not (hasattr(main, "__file__")):
     args.workdir = ""
@@ -1707,19 +1741,21 @@ if not (hasattr(main, "__file__")):
     message.author = member
     message.content = "show"
 
-file_points = args.workdir + "/pointinator.txt"
-bak1_points = args.workdir + "/pointinator.bak1.txt"
-bak2_points = args.workdir + "/pointinator.bak2.txt"
-bak3_points = args.workdir + "/pointinator.bak3.txt"
-file_queue = args.workdir + "/queue.txt"
-bak1_queue = args.workdir + "/queue.bak1.txt"
-bak2_queue = args.workdir + "/queue.bak2.txt"
-bak3_queue = args.workdir + "/queue.bak3.txt"
-file_params = args.workdir + "/params.txt"
-file_log = args.workdir + "/discord.log"
+fconf = config["files"]
 
-channel_points = "points"
-channel_roles = "roles"
+file_points = workdir / fconf["file_points"]
+bak1_points = workdir / fconf["bak1_points"]
+bak2_points = workdir / fconf["bak2_points"]
+bak3_points = workdir / fconf["bak3_points"]
+file_queue = workdir / fconf["file_queue"]
+bak1_queue = workdir / fconf["bak1_queue"]
+bak2_queue = workdir / fconf["bak2_queue"]
+bak3_queue = workdir / fconf["bak3_queue"]
+file_params = workdir / fconf["file_params"]
+file_log = workdir / fconf["file_log"]
+
+channel_points = config["channels"]["points"]
+channel_roles = config["channels"]["roles"]
 
 if (args.dev):
     channel_points = channel_points + "-dev"
@@ -1728,16 +1764,10 @@ if (args.dev):
 # set this flag when you want commands to be processed silently
 passthrough = False
 
-roles = [
-    "Vell",
-    "Sailies",
-    "Guildbosses",
-    "Khan",
-    "Leeching",
-    "PvP",
-    "Atoraxxion",
-    "Othergaming",
-    "Black Shrine"]
+roleset = config["roles"]["roleset"]
+roles = config["roles"][roleset]
+
+roles = [role.strip() for role in roles.split('\n') if role.strip()]
 
 if (os.path.exists(file_params)):
     params = io_params_load()

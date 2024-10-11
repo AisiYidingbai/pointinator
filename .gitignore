@@ -8,6 +8,9 @@ config.ini
 # In that case, this prevents leaking of private data:
 secret.py
 
+# Ignore (default) data directory
+data/
+
 
 #######################################################################################
 # Default Python .gitignore file template taken from here:                            #

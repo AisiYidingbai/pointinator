@@ -2,7 +2,7 @@
 discord bot that accepts commands from chat and tallies points, calculates reward tiers, and manages roles
 
 ## roles supported
-Vell, Sailies, Guildbosses, Khan, Leeching, PvP, Atoraxxion, Othergaming, Black Shrine
+whatever you want. edit the `config.ini`
 
 yep this bot is designed for bdo. there's no reason you can't use it for other things though
 
@@ -18,13 +18,13 @@ access to commands is limited by role. anyone with the Officers role gets direct
 upon a reset, pointinator remembers the names of participants awarded with at least 1 point or tier from the previous leaderboard
 
 # hi helm
-so basically you `git clone https://github.com/AisiYidingbai/pointinator.git` this repo, install python, and then `pip install -r requirements.txt`, discord.py, numpy, and pandas, and run it.
+so basically you `git clone https://github.com/AisiYidingbai/pointinator.git` this repo, install python 3.10+, and then `pip install -r requirements.txt`, discord.py, numpy, and pandas, and run it.
 
 (to update requirements.txt use pipreqs (`pip install pipreqs`) inside project folder)
 
-`cd pointinator` and then copy-paste the secret key into `secret.py`, bai'll tell you my secrets if you ask nicely
+`cd pointinator` and then copy-paste the secret key into `secret.key`, bai'll tell you my secrets if you ask nicely
 
-to stop `secret.py` from updating when you update the repo with `git pull origin`, add it to your `gitignore`: `echo secret.py >> .gitignore`
+to stop `secret.key` from updating when you update the repo with `git pull origin`, add it to your `gitignore`: `echo secret.py >> .gitignore`
 
 the syntax is `python pointinator.py -o /path/to/files/` and you'll see the dev instance go up in the discord test server automatically
 
@@ -51,12 +51,14 @@ in short, you need to
 * you'll see pointinator joined. back in bot settings, scroll back up and generate a token with "reset token", note it down. copy-paste it into the `key` variable in `secret.py` in this repo. this is how it logs in
 * go to general information and mess around with the settings in there to personalise your pointinator
 
-## 3. install pointinator and the secret key
+## 3. install pointinator, the config file, and the secret key
 * in terminal, git clone this repo into the directory where you want pointinator to be installed: `git clone https://github.com/AisiYidingbai/pointinator.git` and then `cd` into it
-* install python using your preferred method
+* install python 3.10+ using your preferred method
 * install dependencies: `pip install -r requirements.txt`
-* edit `secret.py` and copy-paste the secret key from earlier into the "key" variable
-* add secret.py into your gitignore: `echo secret.py >> .gitignore`
+* edit `secret.key` and copy-paste the secret key from earlier into the "key" variable
+* add secret.key into your gitignore: `echo secret.key >> .gitignore`
+* make a copy of the config file: `cp default_config.ini config.ini`
+* edit the config file to your needs: `nano config.ini` or your preferred text editor
 * start up an instance of pointinator with `python pointinator.py -o /path/to/files`. it'll log in to your server
 
 ## 4. let it run in the background

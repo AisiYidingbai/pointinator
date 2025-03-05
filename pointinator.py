@@ -28,7 +28,9 @@ updated = "11-Oct-2024"
 # %% Load configuration from file
 
 
-config_file_path = Path("config.ini")
+program_path = Path(__file__).parent.resolve()
+
+config_file_path = program_path / "config.ini"
 
 if not config_file_path.is_file():
     print("[WARN] No configuration file found")
@@ -45,7 +47,7 @@ with open(config_file_path, "r", encoding="utf-8") as ifile:
     config = ConfigParser()
     config.read_file(ifile)
 
-key_file_path = Path(config["general"]["key_file"])
+key_file_path = program_path / config["general"]["key_file"]
 
 
 # %% Load secret key for API access
@@ -1719,11 +1721,17 @@ parser.add_argument(
     help="Run in developer mode.")
 args = parser.parse_args()
 
-workdir = config["files"]["workdir"]
+workdir = Path(config["files"]["workdir"])
+
+if not workdir.is_absolute():
+    workdir = program_path / config["files"]["workdir"]
+
 if args.workdir is not None:
     # override static configuration
-    workdir = args.workdir
-workdir = Path(workdir)
+    workdir = Path(args.workdir)
+
+    if not workdir.is_absolute():
+        workdir = program_path / args.workdir
 
 # create working directory if it doesn't exist
 workdir.mkdir(parents=True, exist_ok=True)

@@ -17,12 +17,13 @@ import logging                         # Logging
 import json                            # File I/O
 import re                              # Text matching
 import os                              # File I/O
+import uuid                            # Random tokens
 from datetime import datetime          # Date and time
 from math import e                     # Constant e
 from pathlib import Path               # High-level file system access
 from configparser import ConfigParser  # Config parsing
-ver = "2.4.0"
-updated = "11-Oct-2024"
+ver = "2.5.0"
+updated = "23-Mar-2025"
 
 
 # %% Load configuration from file
@@ -48,6 +49,39 @@ with open(config_file_path, "r", encoding="utf-8") as ifile:
     config.read_file(ifile)
 
 key_file_path = program_path / config["general"]["key_file"]
+
+
+admin_key_file_path = program_path / config["general"]["admin_key_file"]
+admin_db_file_path = program_path / config["general"]["admin_db_file"]
+
+admin_key = None
+
+if not admin_db_file_path.is_file():
+    print("[INFO] No admin database file found. Creating one...")
+    admin_db_file_path.touch()
+
+if not admin_key_file_path.is_file():
+    print("[INFO] No admin key file found. Creating one with random key...")
+
+    new_admin_key = uuid.uuid4().hex
+
+    with open(admin_key_file_path, "w") as ofile:
+        ofile.write(new_admin_key)
+
+    print("[INFO] New admin key:")
+    print('*' * (len(new_admin_key) + 4))
+    print("* ", new_admin_key, " *", sep='')
+    print('*' * (len(new_admin_key) + 4))
+
+    admin_key = new_admin_key
+else:
+    with open(admin_key_file_path, "r") as ifile:
+        lines = ifile.readlines()
+
+    admin_key = lines[0].strip()
+
+
+# %% Load admin key
 
 
 # %% Load secret key for API access
@@ -240,6 +274,111 @@ def rng(x):
 def command_echo(x):
     r = "*Your command:  *`" + re.sub("[*`]", "", x.content) + "`" + "\n"
     return r
+
+
+# %% Control commands
+
+
+def control_command(message, parsed):
+    keyword = parsed[0].lower()
+
+    match keyword:
+        case "op" | "makeadmin":
+            send = make_admin(message, parsed)
+        case "deop" | "removeadmin":
+            send = remove_admin(message, parsed)
+
+    return send
+
+
+def add_admin_to_db(user_id):
+    with open(admin_db_file_path, "r") as ifile:
+        lines = ifile.readlines()
+
+    admins = [line.strip() for line in lines]
+
+    if str(user_id) in admins:
+        return  # nothing to do
+
+    admins.append(str(user_id))
+
+    with open(admin_db_file_path, "w") as ofile:
+        ofile.write('\n'.join(admins))
+
+
+def remove_admin_from_db(user_id):
+    with open(admin_db_file_path, "r") as ifile:
+        lines = ifile.readlines()
+
+    admins = [line.strip() for line in lines]
+
+    if str(user_id) not in admins:
+        return  # nothing to do
+
+    while str(user_id) in admins:
+        admins.remove(str(user_id))
+
+    with open(admin_db_file_path, "w") as ofile:
+        ofile.write('\n'.join(admins))
+
+
+def is_admin(user_id):
+    with open(admin_db_file_path, "r") as ifile:
+        lines = ifile.readlines()
+
+    admins = [line.strip() for line in lines]
+
+    return str(user_id) in admins
+
+
+def extract_user_information(message):
+    if not isinstance(message.author, discord.User):
+        return None, None
+
+    user = message.author
+
+    user_name = user.global_name
+    user_id = user.id
+
+    # sanity check
+    if len(user_name) == 0 or user_id is None:
+        return None, None
+
+    return user_name, user_id
+
+
+def make_admin(message, parsed):
+    user_name, user_id = extract_user_information(message)
+
+    if user_name is None or user_id is None:
+        return
+
+    if is_admin(user_id):
+        return message.reply("You are already an admin.")
+
+    if len(parsed) != 2:
+        return message.reply("You are expected to submit an admin token.")
+
+    admin_token = parsed[1]
+
+    if admin_token != admin_key:
+        return message.reply("You submitted an invalid admin token.")
+
+    add_admin_to_db(user_id)
+    return message.reply(f"Congratulations {user_name}, you are now an admin [user id {user_id}]")
+
+
+def remove_admin(message, parsed):
+    user_name, user_id = extract_user_information(message)
+
+    if user_name is None or user_id is None:
+        return
+
+    if not is_admin(user_id):
+        return message.reply("You are currently not an admin.")
+
+    remove_admin_from_db(user_id)
+    return message.reply(f"You are no longer an admin {user_name} [user id {user_id}]. Goodbye.")
 
 
 # %% Curve shapes
@@ -1697,9 +1836,16 @@ async def on_message(message):
     # don't respond to system messages
     if (message.content == ""):
         return
+
     # get the discord message and interpret it
     command = message.content
     parsed = re.split("\\s+", command)
+
+    if isinstance(message.channel, discord.DMChannel):
+        # DMs to the bot are interpreted as control commands
+        await control_command(message, parsed)
+        return
+
     # don't chat in the wrong channels
     if (str(message.channel) == channel_points):
         send = points_channel(message, parsed)

@@ -1,3 +1,6 @@
+# New in v2.5.0: Ignore entire secrets directory
+secret/
+
 # Ignore secret key
 secret.key
 

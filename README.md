@@ -96,13 +96,55 @@ pointinator stalks chat in the #points and #roles channels. add them, and add th
 * restart pointinator: `systemctl restart pointinator`
 * see what's going on with a crashed pointinator: `systemctl status pointinator`
 
+# Using a specific python version
+
+You can use [uv](https://github.com/astral-sh/uv) to handle the virtual environment for you.
+
+* First, make sure you've installed uv. They provide a one-liner to do so:
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+* Then switch to the top-level directory of pointinator:
+
+```
+$ cd /path/to/pointinator
+```
+
+* Now you can create a virtual environment, and (using the `--python` parameter) pin it down to a specific python version:
+
+```
+$ uv venv --python 3.12
+```
+
+* Install the dependencies into the venv:
+
+```
+$ uv pip install -r requirements.txt
+```
+
+`uv` will automatically detect the venv (located in `.venv`) and run a virtual pip (and be much faster doing so).
+By default the venv created by `uv` comes without the pip module installed. You can add it manually by running `$ uv pip install pip`.
+
+* Now whenever you want to run pointinator, you can do so either by using uv or sourcing the venv:
+
+```
+$ uv run python pointinator.py # run using uv
+
+$ source .venv/bin/activate # or source virtual environment
+$ python pointinator.py # and run manually
+```
+
+`uv` has many more features. Check out the docs to learn more!
+
 # tl;dr
 ```
 git clone https://github.com/AisiYidingbai/pointinator.git
 ```
 ```
 cd pointinator
-````
+```
 ```
 pip install -r requirements.txt
 ```

@@ -18,6 +18,46 @@ You can run Pointinator with Docker or Docker-compose (recommended), or you can 
 
 Pointinator requires a Discord server for which you have "Manage Server" permissions.
 
+### Docker-compose (recommended)
+
+1. Clone this repo and `cd` into it
+```
+git clone https://github.com/AisiYidingbai/pointinator.git
+```
+```
+cd pointinator/
+```
+2. Copy-paste a Discord bot token into the `secret/secret.key` file. See the Discord bot setup below on how to get a bot token.
+3. Create a copy of `default_config.ini` as `config.ini`.
+```
+cp default_config.ini config.ini
+```
+4. Start the Docker-compose instance.
+```
+docker-compose up -d
+```
+5. Done! You should see Pointinator online on Discord, ready for commands.
+
+### Docker
+
+1. Clone this repo and `cd` into it
+```
+git clone https://github.com/AisiYidingbai/pointinator.git
+```
+```
+cd pointinator/
+```
+2. Build the Docker image from the Dockerfile
+```
+docker build -t aisiyidingbai/pointinator docker/
+```
+3. Copy-paste a Discord bot token into the `secret/secret.key` file. See the Discord bot setup below on how to get a bot token.
+4. Run the Docker image. At run-time, bind mount the root directory of this repo into the container at `/pointinator/`.
+```
+docker run --rm -v .:/pointinator/ aisiyidingbai/pointinator
+```
+5. Done! You should see Pointinator online on Discord, ready for commands.
+
 ### Manual installation
 
 1. Clone this repo and `cd` into it.
@@ -61,15 +101,11 @@ systemctl daemon-reload
 systemctl enable pointinator
 systemctl start pointinator
 ```
-7. Done! You should see Pointinator log in to your server, ready for commands.
+7. Done! You should see Pointinator online on Discord, ready for commands.
 
-### Docker
+### Migration
 
-Instructions for running Pointinator on Docker will go here later.
-
-### Docker-compose (recommended)
-
-Instructions for running Pointinator on Docker-compose will go here later.
+To migrate Pointinator, all you need are the `data/`, `secret/`, and `config.ini` folders and files. Paste them into a freshly-pulled repo and continue with the installation instructions as above.
 
 ## Discord setup
 

@@ -12,4 +12,4 @@ RUN apt-get update && \
 VOLUME /pointinator
 WORKDIR /pointinator
 
-CMD ["python3", "pointinator.py", "-o", "/pointinator"]
+CMD ["python3", "pointinator.py"]

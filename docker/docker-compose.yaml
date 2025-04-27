@@ -1,9 +1,0 @@
-services:
-  pointinator:
-    image: aisiyidingbai/pointinator:latest
-    container_name: pointinator
-    restart: unless-stopped
-    volumes:
-       - ./secret/:/pointinator/secret/
-       - ./config.ini:/pointinator/config.ini
-       - ./data:/pointinator/data

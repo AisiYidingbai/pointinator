@@ -22,8 +22,8 @@ from datetime import datetime          # Date and time
 from math import e                     # Constant e
 from pathlib import Path               # High-level file system access
 from configparser import ConfigParser  # Config parsing
-ver = "2.5.0"
-updated = "23-Mar-2025"
+ver = "2.5.1"
+updated = "7-Jun-2025"
 
 
 # %% Load configuration from file
@@ -948,17 +948,21 @@ def points_man(message, parsed):
     send = channel_respond(message, colour, content)
     return send
 
-
-def points_info(message, parsed):
-    colour = discord.Colour.teal()
-    content1 = command_echo(message)
-    content2 = """
-\tWelcome to **Pointinator**, a Discord bot that keeps track of points. This version """ + ver + """, last updated """ + updated + """.
+try:
+    text_info = config["info"]["info"]
+    text_info = re.sub("\n", "\n\n\t", text_info)
+except:
+    text_info = """
 \n\t*About*: Send commands by chatting in this channel. Send a command every time someone does something that earns points. Issue `points` to see qualifying activities.
 \n\t*Usage*: Add points with `a <participant> <points>`. The *participant* can be a nickname if they're already on the board. For a full list of commands, issue `help`. For detailed usage, see the guide at <https://goodluck.servegame.com/index.php/how-to-pointinate/>.
 \n\t*Privileges*: Officers' commands will be executed by the bot immediately. Please type deliberately. If you're not an officer, then your command will be put in the queue for an officer to approve.
 \n\t*Support*: Pointinator goes down for nightly maint around 4:00 GMT/BST. If it's down outside of those times, contact Aisi Yidingbai. Pointinator is open-source software available at <https://github.com/AisiYidingbai/pointinator>.
 """
+
+def points_info(message, parsed):
+    colour = discord.Colour.teal()
+    content1 = command_echo(message)
+    content2 = "\n\tWelcome to **Pointinator**, a Discord bot that keeps track of points. This version " + ver + ", last updated " + updated + "." + text_info
     content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send
@@ -1087,28 +1091,22 @@ def points_offset(message, parsed):
         send = queue_add(message, parsed)
         return send
 
-
-def points_points(message, parsed):
-    colour = discord.Colour.greyple()
-    content1 = command_echo(message)
-    content2 = """
-Point values:
-\t**S guild missions**: 1 point
-\t**M guild missions**: 2 points
-\t**L guild missions**: 3 points
-\t**XL guild missions**: 4 points
-\t**Event 3k anymobs (any size)**: 4 points
-\t**Event 5k anymobs (any size)**: 5 points
-\t**Event 6k anymobs (any size)**: 6 points
-\t**Event 7k anymobs (any size)**: 8 points
-\t**Event 10k anymobs (any size)**: 10 points
-\t**Event 14k anymobs (any size)**: 14 points
-\t**Event 20k anymobs (any size)**: 18 points
+try:
+    text_points = config["info"]["points"]
+    text_points = re.sub("\n", "\n\t", text_points)
+except:
+    text_points = """
+\t**Guild missions**: 1 point per 20 mil silver reward
 \t**Attending guildbosses**: 2 points
 \t**Participating in Guild League**: 3 points
 \t**Winning in Guild League**: 4 points
 \t**Depositing a [Guild] Steel Candidum Shell**: 10 points
 """
+
+def points_points(message, parsed):
+    colour = discord.Colour.greyple()
+    content1 = command_echo(message)
+    content2 = "Point values:" + text_points
     content = [content1, content2]
     send = channel_respond(message, colour, content)
     return send

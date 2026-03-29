@@ -386,7 +386,7 @@ def logarithmic(x):  # use log shape to calculate tier from points
     params = io_params_load()
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby(
-        'Participant').sum('Value')
+        'Participant').sum(numeric_only = True)
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap']  # apex of curve
     cap = np.minimum(highscore, params['cap']) + 1  # curve anchor
@@ -402,7 +402,7 @@ def logarithmic_inverse(y):  # use log shape to calculate points from tier
     params = io_params_load()
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby(
-        'Participant').sum('Value')
+        'Participant').sum(numeric_only = True)
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap']  # apex of curve
     cap = np.minimum(highscore, params['cap']) + 1  # curve anchor
@@ -417,7 +417,7 @@ def logistic(x):  # use logistic shape to calculate tier from points
     params = io_params_load()
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby(
-        'Participant').sum('Value')
+        'Participant').sum(numeric_only = True)
     shape = -params['difficulty']
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap']  # apex of curve
@@ -435,7 +435,7 @@ def logistic_inverse(y):  # use logistic shape to calculate points from tier
     params = io_params_load()
     sheet = io_points_load()
     points = sheet.loc[sheet['Type'] == 'point'].groupby(
-        'Participant').sum('Value')
+        'Participant').sum(numeric_only = True)
     shape = -params['difficulty']
     highscore = max(points['Value']) * 0.9
     tcap = params['tcap']  # apex of curve
@@ -513,7 +513,7 @@ def act_points_show(col="Tier", filter=None):
     params = io_params_load()
     # Tiers awarded by points
     points = sheet.loc[sheet['Type'] == 'point'].groupby(
-        'Participant').sum('Value')
+        'Participant').sum(numeric_only = True)
     method = params['method']
     if method == 1:
         points['Tier'] = logarithmic(points['Value'])
@@ -521,7 +521,7 @@ def act_points_show(col="Tier", filter=None):
         points['Tier'] = logistic(points['Value'])
     # Tiers awarded by offsets
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby(
-        'Participant').sum('Value')['Value']  # pivot the sheet for tiers
+        'Participant').sum(numeric_only = True)['Value']  # pivot the sheet for tiers
     # Combined board
     board = points.join(
         offsets,
@@ -532,11 +532,9 @@ def act_points_show(col="Tier", filter=None):
     if board.index.name is None:
         board = board.set_index('Participant')
     # set zero tiers for participants with no offsets
-    board['Value.tier'][np.isnan(board['Value.tier'])] = 0
     # set zero points for participants with yes offsets but no points
-    board['Value'][np.isnan(board['Value'])] = 0
     # set 1 tier for participants with yes offsets but no points
-    board['Tier'][np.isnan(board['Tier'])] = 1
+    board = board.fillna({'Value.tier': 0, 'Value': 0, 'Tier': 1})
     board['Tier'] = np.minimum(
         np.minimum(
             board['Tier'],
@@ -1377,7 +1375,7 @@ def points_split(message, parsed):
             content = [content1, content2, content3]
         else:
             participants = ""
-            divvy = min(operands - 2, 3)
+            divvy = min(operands - 2, 2) # award full points if 1 player, half points if 2+ players
             value = np.around(float(value) / divvy, 1)
             warnNew = False
             filter = []
@@ -1620,16 +1618,12 @@ def roles_give(message, parsed):
     if operands < 2:
         content1 = "Possible commands: `give`, `remove`. Possible roles: " + \
             ", ".join(roles) + ". "
-        content = [content1]
     else:
-        content = []
+        content1 = ""
         uniqueCommands = list(set(parsed[1:operands]))
         uniqueRoles = len(
             list(set([interpret(string, roles) for string in uniqueCommands])))
         parsedRoles = []
-
-        if (uniqueRoles > 1):
-            content = ["Multiple roles"]
 
         for i in range(0, len(uniqueCommands)):
             string = uniqueCommands[i]
@@ -1644,17 +1638,15 @@ def roles_give(message, parsed):
                 if roleid:
                     send = [act_roles_give(message, roleid)]
                     sends = sends + send
-                    content1 = "Adding you to " + role + ". "
-                    content.append(content1)
+                    content1 = content1 + "\n* Adding you to " + role + ". "
                 else:
-                    content1 = "Role " + string + \
+                    content1 = content1 + "\n* Role " + string + \
                         " not found. Possible roles: " + ", ".join(roles) + ". "
-                    content.append(content1)
             else:
-                content1 = "Role " + string + \
+                content1 = content1 + "\n* Role " + string + \
                     " not found. Possible roles: " + ", ".join(roles) + ". "
-                content.append(content1)
 
+    content = [content1]
     send = [channel_respond(message, colour, content)]
     sends = sends + send
     return sends
@@ -1782,6 +1774,8 @@ def roles_channel(message, parsed):
         send = roles_give(message, parsed)
     elif (keyword == "remove"):
         send = roles_remove(message, parsed)
+    elif (keyword in ["c", "chat"]):
+        return
     else:
         send = roles_syntax(message, parsed)
     return send
@@ -1800,7 +1794,7 @@ intents = discord.Intents(
     # emojis=True,
     # emojis_and_stickers=True,
     guild_messages=True,
-    # guild_reactions=True,
+    guild_reactions=True,
     # guild_scheduled_events=True,
     # guild_typing=True,
     guilds=True,
@@ -1852,6 +1846,43 @@ async def on_message(message):
         send = roles_channel(message, parsed)
         for s in send:
             await s
+
+# reaction remover
+# Parse blocked users from config
+def get_blocked_users():
+    users_str = config["reaction_blocker"]["blocked_users"]
+    if not users_str.strip():
+        return []
+    return [int(uid.strip()) for uid in users_str.split(',') if uid.strip()]
+
+# Parse monitored channels from config
+def get_monitored_channels():
+    channels_str = config["reaction_blocker"]["blocked_channels"]
+    if not channels_str.strip():
+        return []
+    return [int(cid.strip()) for cid in channels_str.split(',') if cid.strip()]
+
+@client.event
+async def on_reaction_add(reaction, user):
+    blocked_users = get_blocked_users()
+    monitored_channels = get_monitored_channels()
+    
+    # Check if the user is in the blocked list
+    if user.id not in blocked_users:
+        return
+    
+    # Check if we should monitor this channel
+    if monitored_channels and reaction.message.channel.id not in monitored_channels:
+        return
+    
+    try:
+        # Remove the reaction
+        await reaction.remove(user)
+        print(f'Removed reaction from {user} ({user.id}) in #{reaction.message.channel}')
+    except discord.Forbidden:
+        print(f'Permission denied: Cannot remove reaction in #{reaction.message.channel}')
+    except discord.HTTPException as e:
+        print(f'Error removing reaction: {e}')
 
 # %% Execution
 

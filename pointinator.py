@@ -10,6 +10,7 @@ Created on Mon Jan 31 15:42:10 2022
 
 import __main__ as main
 import discord                         # Discord
+from discord.ext import commands
 import argparse                        # Commandline interface
 import pandas as pd                    # Dataframes
 import numpy as np                     # Math
@@ -22,8 +23,8 @@ from datetime import datetime          # Date and time
 from math import e                     # Constant e
 from pathlib import Path               # High-level file system access
 from configparser import ConfigParser  # Config parsing
-ver = "2.6"
-updated = "29-Mar-2026"
+ver = "2.7"
+updated = "27-Apr-2026"
 
 
 # %% Load configuration from file
@@ -1811,6 +1812,7 @@ intents = discord.Intents(
 )
 
 client = discord.Client(intents=intents)
+client = commands.Bot(command_prefix='!', intents=intents)
 
 
 @client.event
@@ -1846,6 +1848,57 @@ async def on_message(message):
         send = roles_channel(message, parsed)
         for s in send:
             await s
+            
+    await client.process_commands(message)
+
+# message mover
+@client.command(name='movemsg', help='Move a message to another channel')
+@commands.has_permissions(manage_messages=True)
+async def move_message(ctx, message_id: int, target_channel: discord.TextChannel):
+    """
+    Move a message from current channel to another channel.
+    Usage: !movemsg <message_id> <target_channel>
+    Example: !movemsg 1234567890 #general
+    """
+    # Check if user has Officers role
+    if not is_officer(ctx.message):
+        return
+    
+    try:
+        # Fetch the message
+        message = await ctx.channel.fetch_message(message_id)
+        
+        # Create embed with original message content
+        embed = discord.Embed(
+            description=message.content,
+            color=discord.Color.blue(),
+            timestamp=message.created_at
+        )
+        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+        embed.set_footer(text=f'Moved from #{ctx.channel.name}')
+        
+        # Copy attachments if any
+        files = []
+        if message.attachments:
+            for attachment in message.attachments:
+                file = await attachment.to_file()
+                files.append(file)
+        
+        # Send to target channel
+        await target_channel.send(embed=embed, files=files)
+        
+        # Delete original message
+        await message.delete()
+        
+    except discord.NotFound:
+        pass
+    except discord.Forbidden:
+        pass
+    except Exception as e:
+        pass
+    finally:
+        # Delete the !movemsg command message itself (only for officers since non-officers already returned)
+        await ctx.message.delete()
 
 # reaction remover
 # Parse blocked users from config

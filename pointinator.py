@@ -23,8 +23,8 @@ from datetime import datetime          # Date and time
 from math import e                     # Constant e
 from pathlib import Path               # High-level file system access
 from configparser import ConfigParser  # Config parsing
-ver = "2.7"
-updated = "27-Apr-2026"
+ver = "2.8"
+updated = "07-Jul-2026"
 
 
 # %% Load configuration from file

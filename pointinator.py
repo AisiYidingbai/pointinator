@@ -451,6 +451,26 @@ def logistic_inverse(y):  # use logistic shape to calculate points from tier
         x = np.ceil(x + 1)  # to integer, add pseudocount
         x = np.maximum(x, 0)
     return x
+    
+def step(x): # use step function to calculate tier from points
+    params = io_params_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby(
+        'Participant').sum(numeric_only = True)
+    highscore = max(points['Value']) * 0.9
+    cap = np.minimum(highscore, params['cap'])
+    y = np.minimum(np.floor(x / cap), 1) * params['tcap']
+    return y
+    
+def step_inverse(y): # use step function to points from tier
+    params = io_params_load()
+    sheet = io_points_load()
+    points = sheet.loc[sheet['Type'] == 'point'].groupby(
+        'Participant').sum(numeric_only = True)
+    highscore = max(points['Value']) * 0.9
+    cap = np.minimum(highscore, params['cap'])
+    x = np.minimum(np.ceil((y - 1) / params['tcap']), 1) * cap
+    return x
 
 
 # %% Actions: points
@@ -520,6 +540,8 @@ def act_points_show(col="Tier", filter=None):
         points['Tier'] = logarithmic(points['Value'])
     elif method == 2:
         points['Tier'] = logistic(points['Value'])
+    elif method == 3:
+        points['Tier'] = step(points['Value'])
     # Tiers awarded by offsets
     offsets = sheet.loc[sheet['Type'] == 'tier'].groupby(
         'Participant').sum(numeric_only = True)['Value']  # pivot the sheet for tiers
@@ -569,6 +591,8 @@ def act_points_tiers():
             tierpoints.append(logarithmic_inverse(i))
         elif method == 2:
             tierpoints.append(logistic_inverse(i))
+        elif method == 3:
+            tierpoints.append(step_inverse(i))
     tiers = pd.DataFrame({'Tier': currenttiers, 'Value': tierpoints})
     tiers = tiers.set_index('Tier')
     return tiers
@@ -2015,7 +2039,7 @@ else:
         'tcap': 10,
         # maximum tier attainable after accounting for offsets
         'thardcap': 10,
-        # 1: "logarithmic" or 2: "logistic"
+        # 1: "logarithmic" or 2: "logistic" or 3: "step"
         'method': 1,
         # shape of the logistic curve, bigger values mean steeper
         'difficulty': 0,

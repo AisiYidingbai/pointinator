@@ -23,8 +23,8 @@ from datetime import datetime          # Date and time
 from math import e                     # Constant e
 from pathlib import Path               # High-level file system access
 from configparser import ConfigParser  # Config parsing
-ver = "2.8"
-updated = "07-Jul-2026"
+ver = "2.8.1"
+updated = "14-Jul-2026"
 
 
 # %% Load configuration from file
@@ -1686,16 +1686,12 @@ def roles_remove(message, parsed):
     if operands < 2:
         content1 = "Possible commands: `give`, `remove`. Possible roles: " + \
             ", ".join(roles) + ". "
-        content = [content1]
     else:
-        content = []
+        content1 = ""
         uniqueCommands = list(set(parsed[1:operands]))
         uniqueRoles = len(
             list(set([interpret(string, roles) for string in uniqueCommands])))
         parsedRoles = []
-
-        if (uniqueRoles > 1):
-            content = ["Multiple roles"]
 
         for i in range(0, len(uniqueCommands)):
             string = uniqueCommands[i]
@@ -1710,17 +1706,15 @@ def roles_remove(message, parsed):
                 if roleid:
                     send = [act_roles_remove(message, roleid)]
                     sends = sends + send
-                    content1 = "Removing you from " + role + ". "
-                    content.append(content1)
+                    content1 = content1 + "\n* Removing you from " + role + ". "
                 else:
-                    content1 = "Role " + string + \
+                    content1 = content1 + "\n* Role " + string + \
                         " not found. Possible roles: " + ", ".join(roles) + ". "
-                    content.append(content1)
             else:
-                content1 = "Role " + string + \
+                content1 = content1 + "\n* Role " + string + \
                     " not found. Possible roles: " + ", ".join(roles) + ". "
-                content.append(content1)
 
+    content = [content1]
     send = [channel_respond(message, colour, content)]
     sends = sends + send
     return sends
